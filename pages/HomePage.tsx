@@ -1,83 +1,76 @@
+
 import React, { useState, useMemo } from 'react';
+import { Business, Category } from '../types';
 import { CategoryFilter } from '../components/CategoryFilter';
 import { BusinessList } from '../components/BusinessList';
-import { Business, Category } from '../types';
-import { LocationMarkerIcon } from '../components/Icons';
+import { SearchIcon } from '../components/Icons';
 
 interface HomePageProps {
-  businesses: Business[];
   categories: Category[];
+  businesses: Business[];
+  getCategoryName: (categoryId: number) => string;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ businesses, categories }) => {
+export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getCategoryName }) => {
   const [selectedFilter, setSelectedFilter] = useState<string | number>('featured');
-  const [locationStatus, setLocationStatus] = useState('idle');
-
-  const sortedCategories = useMemo(() => 
-    [...categories].sort((a, b) => a.name.localeCompare(b.name)), 
-  [categories]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredBusinesses = useMemo(() => {
+    let result = businesses;
+
     if (selectedFilter === 'featured') {
-      return businesses.filter(business => business.isFeatured);
+      result = result.filter(b => b.isFeatured);
+    } else if (typeof selectedFilter === 'number') {
+      result = result.filter(b => b.categoryId === selectedFilter);
     }
-    return businesses.filter(business => business.categoryId === selectedFilter);
-  }, [selectedFilter, businesses]);
 
-  const getCategoryName = (categoryId: number): string => {
-    return categories.find(cat => cat.id === categoryId)?.name || 'Sin Categoría';
-  }
-
-  const handleLocationClick = () => {
-    setLocationStatus('loading');
-    if (!navigator.geolocation) {
-      alert('La geolocalización no es soportada por tu navegador.');
-      setLocationStatus('error');
-      return;
+    if (searchTerm) {
+      const lowercasedSearchTerm = searchTerm.toLowerCase();
+      result = result.filter(b => 
+        b.name.toLowerCase().includes(lowercasedSearchTerm) ||
+        b.description.toLowerCase().includes(lowercasedSearchTerm) ||
+        b.services.some(s => s.toLowerCase().includes(lowercasedSearchTerm)) ||
+        b.products.some(p => p.toLowerCase().includes(lowercasedSearchTerm))
+      );
     }
     
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('User Location:', position.coords.latitude, position.coords.longitude);
-        alert(`Ubicación obtenida: Lat ${position.coords.latitude.toFixed(4)}, Lon ${position.coords.longitude.toFixed(4)}`);
-        setLocationStatus('success');
-        // Here you would typically filter businesses based on location
-      },
-      () => {
-        alert('No se pudo obtener tu ubicación. Asegúrate de haber otorgado los permisos.');
-        setLocationStatus('error');
-      }
-    );
-  };
+    return result;
+  }, [businesses, selectedFilter, searchTerm]);
 
   return (
-    <>
-      <img 
-        src="https://appdesignmex.com/enlaceizcallichica.jpg" 
-        alt="Banner principal de Enlace Izcalli"
-        className="w-full h-auto object-cover rounded-xl shadow-lg mb-8"
-      />
-
-      <div className="flex justify-center mb-12">
-        <button
-          onClick={handleLocationClick}
-          disabled={locationStatus === 'loading'}
-          className="bg-white border border-red-600 text-red-600 font-semibold py-2 px-6 rounded-full inline-flex items-center hover:bg-red-600 hover:text-white transition-colors duration-300 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <LocationMarkerIcon className="w-5 h-5 mr-2" />
-          {locationStatus === 'loading' ? 'Buscando...' : 'Encontrar negocios cerca de mí'}
-        </button>
+    <div className="animate-fade-in">
+      <div className="text-center mb-8">
+        <img 
+            src="https://appdesignmex.com/enlaceizcallichica.jpg" 
+            alt="Enlace Izcalli" 
+            className="w-full max-w-lg mx-auto rounded-lg shadow-md"
+        />
+        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mt-6">Tu Guía de Negocios en Izcalli</h1>
+        <p className="text-md md:text-lg text-gray-600 mt-2">Encuentra los mejores productos y servicios cerca de ti.</p>
       </div>
 
+      <div className="mb-8 max-w-2xl mx-auto">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Buscar negocios, productos o servicios..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-shadow"
+          />
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <SearchIcon className="h-5 w-5 text-gray-400" />
+          </div>
+        </div>
+      </div>
+      
       <CategoryFilter 
-        categories={sortedCategories}
+        categories={categories}
         selectedFilter={selectedFilter}
         onSelectFilter={setSelectedFilter}
       />
-      <BusinessList 
-        businesses={filteredBusinesses} 
-        getCategoryName={getCategoryName}
-      />
-    </>
+      
+      <BusinessList businesses={filteredBusinesses} getCategoryName={getCategoryName} />
+    </div>
   );
 };

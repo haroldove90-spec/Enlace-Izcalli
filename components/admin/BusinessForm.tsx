@@ -1,122 +1,94 @@
+
 import React, { useState } from 'react';
-import { Category } from '../../types';
+import { Business, Category } from '../../types';
 
 interface BusinessFormProps {
   categories: Category[];
+  onSubmit: (business: Omit<Business, 'id'>) => void;
+  initialData?: Business;
+  onCancel: () => void;
 }
 
-export const BusinessForm: React.FC<BusinessFormProps> = ({ categories }) => {
-  const [formData, setFormData] = useState({
-    logo: null as File | null,
-    name: '',
-    categoryId: '',
-    ownerName: '',
-    services: '',
-    products: '',
-    promotions: '',
-    description: '',
-    phone: '',
-    whatsapp: '',
-    email: '',
-    website: '',
-    location: '',
+// Helper components for form fields
+const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ name, label, ...props }) => (
+  <div>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
+    <input id={name} name={name} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" />
+  </div>
+);
+
+const TextAreaField: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ name, label, ...props }) => (
+  <div>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
+    <textarea id={name} name={name} rows={3} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" />
+  </div>
+);
+
+const SelectField: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string, options: Category[] }> = ({ name, label, options, ...props }) => (
+  <div>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
+    <select id={name} name={name} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+      {options.map((opt: Category) => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+    </select>
+  </div>
+);
+
+
+export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit, initialData, onCancel }) => {
+  const [formData, setFormData] = useState<Omit<Business, 'id'>>({
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    logoUrl: initialData?.logoUrl || '',
+    phone: initialData?.phone || '',
+    whatsapp: initialData?.whatsapp || '',
+    website: initialData?.website || '',
+    categoryId: initialData?.categoryId || categories[0]?.id || 0,
+    services: initialData?.services || [],
+    products: initialData?.products || [],
+    isFeatured: initialData?.isFeatured || false,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({ ...prev, logo: e.target.files![0] }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
+        const { checked } = e.target;
+        setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+        setFormData(prev => ({ ...prev, [name]: name === 'categoryId' ? Number(value) : value }));
     }
   };
   
+  const handleArrayChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'services' | 'products') => {
+      setFormData(prev => ({ ...prev, [field]: e.target.value.split(',').map(item => item.trim()) }));
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would process and submit the data
-    const finalData = {
-        ...formData,
-        services: formData.services.split(',').map(s => s.trim()).filter(Boolean),
-        products: formData.products.split(',').map(p => p.trim()).filter(Boolean),
-        promotions: formData.promotions.split(',').map(p => p.trim()).filter(Boolean),
-    };
-    console.log('Submitting business data:', finalData);
-    alert(`Negocio "${finalData.name}" guardado exitosamente (simulación).`);
-    // Reset form or navigate away
+    onSubmit(formData);
   };
 
-  const InputField: React.FC<{ name: string; label: string; placeholder: string; type?: string; required?: boolean }> = ({ name, label, placeholder, type = 'text', required = false }) => (
-    <div>
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <input
-            type={type}
-            id={name}
-            name={name}
-            value={formData[name as keyof typeof formData] as string}
-            onChange={handleChange}
-            placeholder={placeholder}
-            required={required}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-        />
-    </div>
-  );
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Section 1: Main Info */}
-      <fieldset className="border-t border-gray-200 pt-6">
-        <legend className="text-lg font-semibold text-gray-800">Información Principal</legend>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <InputField name="name" label="Nombre del Negocio" placeholder="Ej: Taquería 'El Buen Pastor'" required />
-            <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                <select id="categoryId" name="categoryId" value={formData.categoryId} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 bg-white">
-                    <option value="" disabled>Selecciona una categoría</option>
-                    {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                </select>
-            </div>
-            <InputField name="ownerName" label="Nombre del Dueño o Representante" placeholder="Ej: Juan Pérez" />
-             <div>
-                <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">Logo del Negocio</label>
-                <input type="file" id="logo" name="logo" onChange={handleFileChange} accept="image/*" className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100" />
-            </div>
-        </div>
-      </fieldset>
-
-       {/* Section 2: Business Details */}
-       <fieldset className="border-t border-gray-200 pt-6">
-        <legend className="text-lg font-semibold text-gray-800">Detalles del Negocio</legend>
-        <div className="space-y-6 mt-4">
-            <InputField name="services" label="Servicios (separados por coma)" placeholder="Ej: Servicio a domicilio, Eventos privados" />
-            <InputField name="products" label="Productos (separados por coma)" placeholder="Ej: Tacos al pastor, Gringas, Alambres" />
-            <InputField name="promotions" label="Promociones (separadas por coma)" placeholder="Ej: 2x1 en tacos los martes" />
-            <div>
-                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descripción (Texto Libre)</label>
-                 <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={4} placeholder="Describe el negocio, su historia, y lo que lo hace especial." className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"></textarea>
-            </div>
-        </div>
-       </fieldset>
-
-      {/* Section 3: Contact Info */}
-      <fieldset className="border-t border-gray-200 pt-6">
-        <legend className="text-lg font-semibold text-gray-800">Información de Contacto</legend>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <InputField name="phone" label="Número de Teléfono" placeholder="5512345678" type="tel" />
-            <InputField name="whatsapp" label="WhatsApp (con código de país)" placeholder="5215512345678" type="tel" />
-            <InputField name="email" label="Correo Electrónico" placeholder="contacto@negocio.com" type="email" />
-            <InputField name="website" label="Página Web" placeholder="https://negocio.com" type="url" />
-            <div className="md:col-span-2">
-                <InputField name="location" label="Mapa de Ubicación (Dirección o URL de Google Maps)" placeholder="Av. de los Chopos 123, Arcos del Alba..." />
-            </div>
-        </div>
-      </fieldset>
-
-      <div className="flex justify-end pt-6 border-t border-gray-200">
-        <button type="submit" className="bg-red-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-red-700 transition-colors duration-300 shadow-lg transform hover:scale-105">
-          Guardar Negocio
-        </button>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputField name="name" label="Nombre del Negocio" value={formData.name} onChange={handleChange} required />
+        <SelectField name="categoryId" label="Categoría" value={formData.categoryId} onChange={handleChange} options={categories} required />
+      </div>
+      <TextAreaField name="description" label="Descripción" value={formData.description} onChange={handleChange} required />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputField name="logoUrl" label="URL del Logo" value={formData.logoUrl} onChange={handleChange} />
+        <InputField name="phone" label="Teléfono" value={formData.phone} onChange={handleChange} />
+        <InputField name="whatsapp" label="WhatsApp (con código de país)" value={formData.whatsapp} onChange={handleChange} />
+        <InputField name="website" label="Sitio Web" value={formData.website} onChange={handleChange} />
+      </div>
+      <InputField name="services" label="Servicios (separados por coma)" value={formData.services.join(', ')} onChange={(e) => handleArrayChange(e, 'services')} />
+      <InputField name="products" label="Productos (separados por coma)" value={formData.products.join(', ')} onChange={(e) => handleArrayChange(e, 'products')} />
+      <div className="flex items-center">
+        <input type="checkbox" id="isFeatured" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
+        <label htmlFor="isFeatured" className="ml-2 block text-sm font-medium text-gray-700">¿Es un negocio destacado?</label>
+      </div>
+      <div className="flex justify-end space-x-4">
+        <button type="button" onClick={onCancel} className="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
+        <button type="submit" className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">{initialData ? 'Actualizar' : 'Crear'} Negocio</button>
       </div>
     </form>
   );
