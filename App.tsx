@@ -26,14 +26,60 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const App: React.FC = () => {
-  const [businesses, setBusinesses] = useState<Business[]>(initialBusinesses);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [businesses, setBusinesses] = useState<Business[]>(() => {
+    try {
+      const savedBusinesses = localStorage.getItem('enlaceIzcalli-businesses');
+      if (savedBusinesses) {
+        return JSON.parse(savedBusinesses);
+      }
+      // If nothing in localStorage, save initial data
+      localStorage.setItem('enlaceIzcalli-businesses', JSON.stringify(initialBusinesses));
+      return initialBusinesses;
+    } catch (error) {
+      console.error('Failed to load businesses from localStorage', error);
+      return initialBusinesses;
+    }
+  });
+
+  const [categories, setCategories] = useState<Category[]>(() => {
+    try {
+      const savedCategories = localStorage.getItem('enlaceIzcalli-categories');
+      if (savedCategories) {
+        return JSON.parse(savedCategories);
+      }
+      // If nothing in localStorage, save initial data
+      localStorage.setItem('enlaceIzcalli-categories', JSON.stringify(initialCategories));
+      return initialCategories;
+    } catch (error) {
+      console.error('Failed to load categories from localStorage', error);
+      return initialCategories;
+    }
+  });
+
   const [activeView, setActiveView] = useState<View>('home');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('user');
   const [editingBusiness, setEditingBusiness] = useState<Business | null>(null);
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  
+  // Effect to save businesses to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('enlaceIzcalli-businesses', JSON.stringify(businesses));
+    } catch (error) {
+      console.error('Failed to save businesses to localStorage', error);
+    }
+  }, [businesses]);
+
+  // Effect to save categories to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('enlaceIzcalli-categories', JSON.stringify(categories));
+    } catch (error) {
+      console.error('Failed to save categories to localStorage', error);
+    }
+  }, [categories]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -56,6 +102,7 @@ const App: React.FC = () => {
         return b;
       })
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleInstallClick = () => {

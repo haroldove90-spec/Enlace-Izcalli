@@ -19,6 +19,7 @@ const adminNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
   { id: 'adminDashboard', name: 'Dashboard', icon: ChartBarIcon },
   { id: 'adminAddBusiness', name: 'Añadir', icon: PlusCircleIcon },
   { id: 'adminManageBusinesses', name: 'Negocios', icon: BriefcaseIcon },
+  { id: 'adminManageCategories', name: 'Categorías', icon: TagIcon },
   { id: 'adminClients', name: 'Clientes', icon: UsersIcon },
 ];
 
@@ -29,10 +30,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView,
   if (currentUserRole === 'user') {
     navLinks = [...userNavLinks, { id: 'adminDashboard', name: 'Admin', icon: ChartBarIcon }];
   }
+  
+  // Adjust grid columns based on number of items for better spacing
+  const gridColsClass = `grid-cols-${navLinks.length}`;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-red-600 shadow-t-lg z-50">
-      <div className="flex justify-around items-center h-16">
+      <div className={`grid ${gridColsClass} h-16`}>
         {navLinks.map((link) => {
             const isActive = activeView === link.id;
             return (
