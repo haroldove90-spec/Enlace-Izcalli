@@ -10,6 +10,22 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const getErrorMessage = async (response: Response, defaultMessage: string): Promise<string> => {
+      try {
+          const errorData = await response.json();
+          return errorData.error || JSON.stringify(errorData);
+      } catch (e) {
+          // If JSON parsing fails, try to get the text body
+          try {
+            const textError = await response.text();
+            return textError || defaultMessage;
+          } catch {
+            return defaultMessage;
+          }
+      }
+  };
+
+
   const handleAddCategory = async () => {
     if (newCategoryName.trim() && !isSubmitting) {
       setIsSubmitting(true);
@@ -21,8 +37,8 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
         });
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Error al añadir la categoría.' }));
-          throw new Error(errorData.error || 'No se pudo añadir la categoría.');
+          const errorMessage = await getErrorMessage(response, 'No se pudo añadir la categoría.');
+          throw new Error(errorMessage);
         }
 
         setNewCategoryName('');
@@ -46,8 +62,8 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
           body: JSON.stringify({ id }),
         });
         if (!response.ok) {
-           const errorData = await response.json().catch(() => ({ error: 'Error al eliminar la categoría.'}));
-           throw new Error(errorData.error || 'No se pudo eliminar la categoría.');
+           const errorMessage = await getErrorMessage(response, 'No se pudo eliminar la categoría.');
+           throw new Error(errorMessage);
         }
         onCategoriesUpdate(); // Refetch categories from parent
       } catch (error) {
