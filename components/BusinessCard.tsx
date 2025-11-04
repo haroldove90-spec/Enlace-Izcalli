@@ -1,6 +1,6 @@
 import React from 'react';
 import { Business } from '../types';
-import { PhoneIcon, WhatsAppIcon, WebsiteIcon } from './Icons';
+import { PhoneIcon, WhatsAppIcon, WebsiteIcon, ShareIcon } from './Icons';
 
 interface BusinessCardProps {
   business: Business;
@@ -14,6 +14,23 @@ const InfoTag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryName }) => {
+  const handleShare = async () => {
+    const shareData = {
+      title: business.name,
+      text: `${business.description} - ¡Encuéntralo en Enlace Izcalli!`,
+      url: window.location.href, // Could be a specific URL for the business if available
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        alert('La función de compartir no está disponible en este navegador.');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full transform hover:scale-105 transition-transform duration-300">
       <div className="p-6 flex-grow">
@@ -61,6 +78,9 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
           <a href={business.website} target="_blank" rel="noopener noreferrer" title="Sitio Web" className="text-gray-600 hover:text-gray-900 transition-colors">
             <WebsiteIcon className="w-6 h-6" />
           </a>
+          <button onClick={handleShare} title="Compartir" className="text-gray-600 hover:text-blue-500 transition-colors">
+            <ShareIcon className="w-6 h-6" />
+          </button>
         </div>
       </div>
     </div>

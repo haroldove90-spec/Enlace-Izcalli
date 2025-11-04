@@ -1,5 +1,7 @@
 {
   "name": "Enlace Izcalli",
   "description": "Un directorio comercial digital para encontrar los mejores negocios, productos y servicios en Cuautitlán Izcalli. Conecta con comercios locales de forma rápida y sencilla.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

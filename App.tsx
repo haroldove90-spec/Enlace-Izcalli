@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { BottomNav } from './components/BottomNav';
@@ -7,11 +7,60 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { AdvertisePage } from './pages/AdvertisePage';
 import { ZonesPage } from './pages/ZonesPage';
 import { BUSINESSES, CATEGORIES } from './constants';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
 type View = 'home' | 'categories' | 'advertise' | 'zones';
 
+// Define the BeforeInstallPromptEvent interface for use in state
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('home');
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, []);
+
+  const handleInstallClick = () => {
+    if (!deferredPrompt) {
+      return;
+    }
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      // We can only use the prompt once, clear it.
+      setDeferredPrompt(null);
+    });
+  };
+
+  const handleDismissInstall = () => {
+    setDeferredPrompt(null);
+  };
 
   const renderContent = () => {
     switch (activeView) {
@@ -41,6 +90,12 @@ const App: React.FC = () => {
         </footer>
       </div>
       <BottomNav activeView={activeView} setActiveView={setActiveView} />
+      {deferredPrompt && (
+        <PwaInstallPrompt 
+          onInstall={handleInstallClick}
+          onDismiss={handleDismissInstall}
+        />
+      )}
     </div>
   );
 };

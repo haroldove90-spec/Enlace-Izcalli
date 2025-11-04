@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="UTF--8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://appdesignmex.com/enlaceizcalliicono.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Enlace Izcalli - Directorio Comercial</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#dc2626" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Enlace Izcalli">
+    <link rel="apple-touch-icon" href="https://appdesignmex.com/enlaceizcalliicono.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       /* Simple scrollbar styling for better aesthetics */
@@ -20,6 +26,20 @@
       }
       ::-webkit-scrollbar-thumb:hover {
         background: #555;
+      }
+      /* PWA Install Prompt Animation */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translate3d(0, 100%, 0);
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+      }
+      .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
       }
     </style>
   <script type="importmap">
