@@ -41,13 +41,38 @@ const App: React.FC = () => {
         fetch('/api/businesses'),
         fetch('/api/categories')
       ]);
+
+      if (!businessesRes.ok || !categoriesRes.ok) {
+        throw new Error(`API request failed: businesses status ${businessesRes.status}, categories status ${categoriesRes.status}`);
+      }
+
       const businessesData = await businessesRes.json();
       const categoriesData = await categoriesRes.json();
-      setBusinesses(businessesData);
-      setCategories(categoriesData);
+
+      let finalBusinesses = Array.isArray(businessesData) ? businessesData : [];
+      const finalCategories = Array.isArray(categoriesData) ? categoriesData : [];
+      
+      // Process expirations right after fetching to avoid re-renders
+      if (finalBusinesses.length > 0) {
+          const now = new Date();
+          finalBusinesses = finalBusinesses.map(b => {
+              if (b.isActive && new Date(b.promotionEndDate) < now) {
+                  // This is a UI-only change for immediate feedback
+                  // A backend process should ideally handle this state change permanently
+                  return { ...b, isActive: false };
+              }
+              return b;
+          });
+      }
+
+      setBusinesses(finalBusinesses);
+      setCategories(finalCategories);
+
     } catch (error) {
       console.error("Failed to fetch data:", error);
-      // Optionally, set some error state to show in the UI
+      // On any error, reset to empty arrays to prevent crashes
+      setBusinesses([]);
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }
@@ -66,21 +91,6 @@ const App: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
-  
-  // Effect to check for expired promotions on app load - this can remain client-side for immediate UI feedback
-  useEffect(() => {
-    const now = new Date();
-    setBusinesses(prevBusinesses => 
-      prevBusinesses.map(b => {
-        if (b.isActive && new Date(b.promotionEndDate) < now) {
-          // Here you could also trigger an API call to update the backend
-          return { ...b, isActive: false };
-        }
-        return b;
-      })
-    );
-  }, [businesses]);
-
 
   const handleInstallClick = () => {
     if (!deferredPrompt) return;
