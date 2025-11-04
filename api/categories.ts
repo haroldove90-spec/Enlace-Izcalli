@@ -5,9 +5,13 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const client = createClient({
-    connectionString: process.env.POSTGRES_URL,
-  });
+  const connectionString = process.env.POSTGRES_URL;
+  if (!connectionString) {
+    console.error('Missing POSTGRES_URL environment variable');
+    return response.status(500).json({ error: 'Database configuration error: Connection string is missing.' });
+  }
+  
+  const client = createClient({ connectionString });
 
   try {
     await client.connect();
