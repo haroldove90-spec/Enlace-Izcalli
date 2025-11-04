@@ -19,12 +19,18 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: newCategoryName.trim() }),
         });
-        if (!response.ok) throw new Error('Failed to add category');
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Error al añadir la categoría.' }));
+          throw new Error(errorData.error || 'No se pudo añadir la categoría.');
+        }
+
         setNewCategoryName('');
         onCategoriesUpdate(); // Refetch categories from parent
       } catch (error) {
         console.error(error);
-        alert('Error al añadir la categoría.');
+        const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
+        alert(message);
       } finally {
         setIsSubmitting(false);
       }
@@ -32,18 +38,22 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   };
 
   const handleDeleteCategory = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría? Esta acción no se puede deshacer.')) {
       try {
         const response = await fetch(`/api/categories`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id }),
         });
-        if (!response.ok) throw new Error('Failed to delete category');
+        if (!response.ok) {
+           const errorData = await response.json().catch(() => ({ error: 'Error al eliminar la categoría.'}));
+           throw new Error(errorData.error || 'No se pudo eliminar la categoría.');
+        }
         onCategoriesUpdate(); // Refetch categories from parent
       } catch (error) {
         console.error(error);
-        alert('Error al eliminar la categoría.');
+        const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
+        alert(message);
       }
     }
   };

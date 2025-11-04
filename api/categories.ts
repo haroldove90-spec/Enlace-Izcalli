@@ -14,9 +14,16 @@ export default async function handler(
     else if (request.method === 'POST') {
       const { name } = request.body;
       if (!name) {
-        return response.status(400).json({ error: 'Category name is required' });
+        return response.status(400).json({ error: 'El nombre de la categoría es requerido.' });
       }
-      await sql`INSERT INTO categories (name) VALUES (${name});`;
+      
+      const trimmedName = name.trim();
+      const { rowCount } = await sql`SELECT 1 FROM categories WHERE LOWER(name) = LOWER(${trimmedName});`;
+      if (rowCount > 0) {
+        return response.status(409).json({ error: `La categoría '${trimmedName}' ya existe.` });
+      }
+
+      await sql`INSERT INTO categories (name) VALUES (${trimmedName});`;
       const { rows } = await sql`SELECT * FROM categories ORDER BY id;`;
       return response.status(201).json(rows);
     }
@@ -36,6 +43,7 @@ export default async function handler(
     }
   } catch (error) {
      console.error('API Error:', error);
-     return response.status(500).json({ error });
+     const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
+     return response.status(500).json({ error: message });
   }
 }
