@@ -24,7 +24,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
             className="w-20 h-20 rounded-full object-cover border-4 border-gray-100 flex-shrink-0"
           />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-blue-600">{categoryName}</p>
+            <p className="text-sm font-semibold text-red-600">{categoryName}</p>
             <h3 className="text-xl font-bold text-gray-800">{business.name}</h3>
           </div>
         </div>
@@ -52,7 +52,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
       
       <div className="bg-gray-50 p-4 mt-auto border-t border-gray-200">
         <div className="flex justify-around items-center">
-          <a href={`tel:${business.phone}`} title="Llamar" className="text-gray-600 hover:text-blue-600 transition-colors">
+          <a href={`tel:${business.phone}`} title="Llamar" className="text-gray-600 hover:text-red-600 transition-colors">
             <PhoneIcon className="w-6 h-6" />
           </a>
           <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" className="text-gray-600 hover:text-green-500 transition-colors">

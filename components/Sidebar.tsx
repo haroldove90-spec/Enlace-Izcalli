@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
             <li key={link.id}>
               <button 
                 onClick={() => setActiveView(link.id)}
-                className={`w-full flex items-center px-4 py-3 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200 text-left ${activeView === link.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                className={`w-full flex items-center px-4 py-3 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:text-red-600 transition-colors duration-200 text-left ${activeView === link.id ? 'bg-red-50 text-red-600' : ''}`}
               >
                 <link.icon className="w-6 h-6 mr-3" />
                 <span>{link.name}</span>
