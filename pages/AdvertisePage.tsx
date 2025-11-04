@@ -48,13 +48,13 @@ export const AdvertisePage: React.FC = () => {
 
       <div className="text-center mt-12">
         <a 
-          href="https://wa.me/5215624222449"
+          href="https://wa.me/5215624222449?text=Quiero%20promocionar%20mi%20negocio%20en%20Enlace%20Izcalli"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-green-500 text-white font-bold py-4 px-10 rounded-full text-lg hover:bg-green-600 transition-transform transform hover:scale-105 duration-300 inline-flex items-center justify-center shadow-lg"
         >
           <WhatsAppIcon className="w-7 h-7 mr-3" />
-          ¡Quiero Anunciarme por WhatsApp!
+          Quiero anunciarme
         </a>
       </div>
     </div>
