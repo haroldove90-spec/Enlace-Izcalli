@@ -3,7 +3,7 @@ import { WhatsAppIcon } from '../components/Icons';
 
 export const AdvertisePage: React.FC = () => {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto animate-fade-in">
+    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto">
       <div className="text-center">
         <img 
             src="https://appdesignmex.com/enlaceizcalli.png" 

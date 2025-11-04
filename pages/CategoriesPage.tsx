@@ -24,7 +24,7 @@ const categoryIcons: { [key: number]: React.FC<any> } = {
 
 export const CategoriesPage: React.FC<CategoriesPageProps> = ({ categories }) => {
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Categorías</h1>
       <p className="text-center text-gray-600 mb-8">Encuentra lo que buscas navegando por nuestras categorías.</p>
       

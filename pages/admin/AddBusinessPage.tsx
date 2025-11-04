@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BusinessForm } from '../../components/admin/BusinessForm';
 import { Category, Business } from '../../types';
@@ -11,18 +10,12 @@ interface AddBusinessPageProps {
 }
 
 export const AddBusinessPage: React.FC<AddBusinessPageProps> = ({ categories, onAddBusiness, setActiveView }) => {
-  const handleSubmit = (businessData: Omit<Business, 'id'>) => {
-    onAddBusiness(businessData);
-    alert('Negocio añadido con éxito!');
-    setActiveView('adminDashboard');
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto animate-fade-in">
+    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Añadir Nuevo Negocio</h1>
       <BusinessForm 
         categories={categories} 
-        onSubmit={handleSubmit} 
+        onSubmit={onAddBusiness} 
         onCancel={() => setActiveView('adminDashboard')} 
       />
     </div>

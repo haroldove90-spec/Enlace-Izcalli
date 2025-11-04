@@ -1,4 +1,3 @@
-
 export interface Category {
   id: number;
   name: string;
@@ -16,4 +15,6 @@ export interface Business {
   services: string[];
   products: string[];
   isFeatured: boolean;
+  ownerName: string;
+  ownerEmail: string;
 }

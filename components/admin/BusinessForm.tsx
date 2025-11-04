@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Business, Category } from '../../types';
 
 interface BusinessFormProps {
   categories: Category[];
-  onSubmit: (business: Omit<Business, 'id'>) => void;
+  onSubmit: (business: Omit<Business, 'id'> | Business) => void;
   initialData?: Business;
   onCancel: () => void;
 }
@@ -35,7 +34,7 @@ const SelectField: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { la
 
 
 export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit, initialData, onCancel }) => {
-  const [formData, setFormData] = useState<Omit<Business, 'id'>>({
+  const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
     logoUrl: initialData?.logoUrl || '',
@@ -46,6 +45,8 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
     services: initialData?.services || [],
     products: initialData?.products || [],
     isFeatured: initialData?.isFeatured || false,
+    ownerName: initialData?.ownerName || '',
+    ownerEmail: initialData?.ownerEmail || '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -64,11 +65,26 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    if(initialData) {
+        onSubmit({ ...initialData, ...formData });
+    } else {
+        onSubmit(formData as Omit<Business, 'id'>);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="p-4 border-l-4 border-red-500 bg-red-50">
+        <h2 className="text-lg font-bold text-gray-800">Datos del Cliente</h2>
+      </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputField name="ownerName" label="Nombre del Dueño/Representante" value={formData.ownerName} onChange={handleChange} required />
+        <InputField name="ownerEmail" label="Email del Dueño" type="email" value={formData.ownerEmail} onChange={handleChange} required />
+      </div>
+
+       <div className="p-4 border-l-4 border-red-500 bg-red-50 mt-8">
+        <h2 className="text-lg font-bold text-gray-800">Datos del Negocio</h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <InputField name="name" label="Nombre del Negocio" value={formData.name} onChange={handleChange} required />
         <SelectField name="categoryId" label="Categoría" value={formData.categoryId} onChange={handleChange} options={categories} required />
@@ -86,7 +102,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
         <input type="checkbox" id="isFeatured" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
         <label htmlFor="isFeatured" className="ml-2 block text-sm font-medium text-gray-700">¿Es un negocio destacado?</label>
       </div>
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-4 pt-4 border-t">
         <button type="button" onClick={onCancel} className="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
         <button type="submit" className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">{initialData ? 'Actualizar' : 'Crear'} Negocio</button>
       </div>

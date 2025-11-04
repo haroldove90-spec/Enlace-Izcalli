@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Business, Category } from '../types';
 import { CategoryFilter } from '../components/CategoryFilter';
@@ -38,18 +37,18 @@ export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getC
   }, [businesses, selectedFilter, searchTerm]);
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in max-w-7xl mx-auto">
       <div className="text-center mb-8">
         <img 
             src="https://appdesignmex.com/enlaceizcallichica.jpg" 
             alt="Enlace Izcalli" 
-            className="w-full max-w-lg mx-auto rounded-lg shadow-md"
+            className="w-full md:w-3/4 lg:w-1/2 mx-auto rounded-lg shadow-md"
         />
         <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mt-6">Tu Guía de Negocios en Izcalli</h1>
         <p className="text-md md:text-lg text-gray-600 mt-2">Encuentra los mejores productos y servicios cerca de ti.</p>
       </div>
 
-      <div className="mb-8 max-w-2xl mx-auto">
+      <div className="mb-8 w-full md:w-3/4 lg:w-1/2 mx-auto">
         <div className="relative">
           <input
             type="text"

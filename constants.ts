@@ -1,4 +1,3 @@
-
 import { Category, Business } from './types';
 
 export const CATEGORIES: Category[] = [
@@ -23,6 +22,8 @@ export const BUSINESSES: Business[] = [
     services: ["Tacos al Pastor", "Gringas", "Alambres"],
     products: ["Refrescos", "Aguas Frescas"],
     isFeatured: true,
+    ownerName: "Carlos Pérez",
+    ownerEmail: "carlos.perez@example.com",
   },
   {
     id: 2,
@@ -36,6 +37,8 @@ export const BUSINESSES: Business[] = [
     services: ["Limpieza Dental", "Blanqueamiento", "Ortodoncia", "Implantes"],
     products: [],
     isFeatured: true,
+    ownerName: "Dra. Ana Gómez",
+    ownerEmail: "ana.gomez@example.com",
   },
   {
     id: 3,
@@ -49,6 +52,8 @@ export const BUSINESSES: Business[] = [
     services: ["Asesoría Legal", "Contratos", "Litigios"],
     products: [],
     isFeatured: false,
+    ownerName: "Lic. Roberto Díaz",
+    ownerEmail: "roberto.diaz@example.com",
   },
   {
     id: 4,
@@ -62,6 +67,8 @@ export const BUSINESSES: Business[] = [
     services: ["Venta de Ropa", "Asesoría de Imagen"],
     products: ["Vestidos", "Trajes", "Accesorios"],
     isFeatured: true,
+    ownerName: "Sofía Martínez",
+    ownerEmail: "sofia.martinez@example.com",
   },
   {
     id: 5,
@@ -75,6 +82,8 @@ export const BUSINESSES: Business[] = [
     services: ["Afinación", "Frenos", "Cambio de Aceite", "Suspensión"],
     products: ["Refacciones", "Aditivos"],
     isFeatured: false,
+    ownerName: "Jorge Hernández",
+    ownerEmail: "jorge.hernandez@example.com",
   },
   {
     id: 6,
@@ -88,5 +97,7 @@ export const BUSINESSES: Business[] = [
     services: ["Diseño de Jardines", "Mantenimiento", "Venta de Plantas"],
     products: ["Macetas", "Tierra Preparada", "Fertilizantes"],
     isFeatured: false,
+    ownerName: "Laura Torres",
+    ownerEmail: "laura.torres@example.com",
   }
 ];

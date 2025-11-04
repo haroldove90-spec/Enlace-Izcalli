@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Category } from '../../types';
 
@@ -28,7 +27,7 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto animate-fade-in">
+    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Gestionar Categorías</h1>
       
       <div className="flex gap-2 mb-6">

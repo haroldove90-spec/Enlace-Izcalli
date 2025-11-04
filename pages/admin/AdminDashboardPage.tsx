@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { StatCard } from '../../components/admin/StatCard';
 import { SimpleBarChart } from '../../components/admin/SimpleBarChart';
 import { Business, Category } from '../../types';
 import { View } from '../../App';
-import { PlusIcon } from '../../components/Icons';
 
 interface AdminDashboardPageProps {
   businesses: Business[];
@@ -12,7 +10,7 @@ interface AdminDashboardPageProps {
   setActiveView: (view: View) => void;
 }
 
-export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ businesses, categories, setActiveView }) => {
+export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ businesses, categories }) => {
   const totalBusinesses = businesses.length;
   const totalCategories = categories.length;
   const featuredBusinesses = businesses.filter(b => b.isFeatured).length;
@@ -23,24 +21,9 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
   }));
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in max-w-7xl mx-auto">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Panel de Administración</h1>
-        <div className="flex space-x-2">
-            <button
-              onClick={() => setActiveView('adminAddBusiness')}
-              className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors flex items-center"
-            >
-              <PlusIcon className="w-5 h-5 mr-2" />
-              Añadir Negocio
-            </button>
-             <button
-              onClick={() => setActiveView('adminManageCategories')}
-              className="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center"
-            >
-              Gestionar Categorías
-            </button>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

@@ -3,7 +3,7 @@ import { MapIcon } from '../components/Icons';
 
 export const ZonesPage: React.FC = () => {
   return (
-    <div className="text-center flex flex-col items-center justify-center h-full max-w-2xl mx-auto animate-fade-in">
+    <div className="text-center flex flex-col items-center justify-center h-full animate-fade-in max-w-7xl mx-auto">
       <MapIcon className="w-24 h-24 text-red-400 mb-6" />
       <h1 className="text-4xl font-bold text-gray-800 mb-3">Explora Negocios por Zona</h1>
       <p className="text-lg text-gray-600 mb-8">
