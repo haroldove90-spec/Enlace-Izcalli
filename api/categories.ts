@@ -11,9 +11,10 @@ export default async function handler(
     return response.status(500).json({ error: 'Database configuration error: Connection string is missing.' });
   }
   
-  const client = createClient({ connectionString });
+  let client;
 
   try {
+    client = createClient({ connectionString });
     await client.connect();
 
     if (request.method === 'GET') {
@@ -60,6 +61,8 @@ export default async function handler(
      }
      return response.status(500).json({ error: errorMessage });
   } finally {
+    if (client) {
       await client.end();
+    }
   }
 }

@@ -12,9 +12,10 @@ export default async function handler(
     return response.status(500).json({ error: 'Database configuration error: Connection string is missing.' });
   }
 
-  const client = createClient({ connectionString });
+  let client;
   
   try {
+    client = createClient({ connectionString });
     await client.connect();
 
     // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint
@@ -83,6 +84,8 @@ export default async function handler(
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return response.status(500).json({ error: 'Failed to seed database', details: errorMessage });
   } finally {
+    if (client) {
       await client.end();
+    }
   }
 }
