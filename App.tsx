@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -13,7 +13,6 @@ import { ClientsPage } from './pages/admin/ClientsPage';
 import { EditBusinessPage } from './pages/admin/EditBusinessPage';
 import { ManageBusinessesPage } from './pages/admin/ManageBusinessesPage';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
-import { CATEGORIES as initialCategories, BUSINESSES as initialBusinesses } from './constants';
 import { Business, Category } from './types';
 
 export type View = 'home' | 'categories' | 'advertise' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
@@ -26,60 +25,37 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const App: React.FC = () => {
-  const [businesses, setBusinesses] = useState<Business[]>(() => {
-    try {
-      const savedBusinesses = localStorage.getItem('enlaceIzcalli-businesses');
-      if (savedBusinesses) {
-        return JSON.parse(savedBusinesses);
-      }
-      // If nothing in localStorage, save initial data
-      localStorage.setItem('enlaceIzcalli-businesses', JSON.stringify(initialBusinesses));
-      return initialBusinesses;
-    } catch (error) {
-      console.error('Failed to load businesses from localStorage', error);
-      return initialBusinesses;
-    }
-  });
-
-  const [categories, setCategories] = useState<Category[]>(() => {
-    try {
-      const savedCategories = localStorage.getItem('enlaceIzcalli-categories');
-      if (savedCategories) {
-        return JSON.parse(savedCategories);
-      }
-      // If nothing in localStorage, save initial data
-      localStorage.setItem('enlaceIzcalli-categories', JSON.stringify(initialCategories));
-      return initialCategories;
-    } catch (error) {
-      console.error('Failed to load categories from localStorage', error);
-      return initialCategories;
-    }
-  });
-
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeView, setActiveView] = useState<View>('home');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('user');
   const [editingBusiness, setEditingBusiness] = useState<Business | null>(null);
-
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  
-  // Effect to save businesses to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem('enlaceIzcalli-businesses', JSON.stringify(businesses));
-    } catch (error) {
-      console.error('Failed to save businesses to localStorage', error);
-    }
-  }, [businesses]);
 
-  // Effect to save categories to localStorage whenever they change
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
     try {
-      localStorage.setItem('enlaceIzcalli-categories', JSON.stringify(categories));
+      const [businessesRes, categoriesRes] = await Promise.all([
+        fetch('/api/businesses'),
+        fetch('/api/categories')
+      ]);
+      const businessesData = await businessesRes.json();
+      const categoriesData = await categoriesRes.json();
+      setBusinesses(businessesData);
+      setCategories(categoriesData);
     } catch (error) {
-      console.error('Failed to save categories to localStorage', error);
+      console.error("Failed to fetch data:", error);
+      // Optionally, set some error state to show in the UI
+    } finally {
+      setIsLoading(false);
     }
-  }, [categories]);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -91,19 +67,20 @@ const App: React.FC = () => {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
   
-  // Effect to check for expired promotions on app load
+  // Effect to check for expired promotions on app load - this can remain client-side for immediate UI feedback
   useEffect(() => {
     const now = new Date();
     setBusinesses(prevBusinesses => 
       prevBusinesses.map(b => {
         if (b.isActive && new Date(b.promotionEndDate) < now) {
+          // Here you could also trigger an API call to update the backend
           return { ...b, isActive: false };
         }
         return b;
       })
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [businesses]);
+
 
   const handleInstallClick = () => {
     if (!deferredPrompt) return;
@@ -115,11 +92,9 @@ const App: React.FC = () => {
   };
 
   const handleViewChange = (view: View) => {
-    // If switching out of admin role, go to home
     if (currentUserRole === 'admin' && !view.startsWith('admin')) {
       setCurrentUserRole('user');
     }
-    // If switching into admin role, go to dashboard
     if (currentUserRole === 'user' && view.startsWith('admin')) {
        setCurrentUserRole('admin');
     }
@@ -131,30 +106,51 @@ const App: React.FC = () => {
     setActiveView('adminEditBusiness');
   };
 
-  const handleUpdateBusiness = (updatedBusiness: Business) => {
-    setBusinesses(businesses.map(b => b.id === updatedBusiness.id ? updatedBusiness : b));
-    setEditingBusiness(null);
-    setActiveView('adminClients'); // Or maybe adminManageBusinesses
-    alert('Negocio actualizado con éxito!');
+  const handleUpdateBusiness = async (updatedBusiness: Business) => {
+    try {
+      const response = await fetch(`/api/businesses`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedBusiness),
+      });
+      if (!response.ok) throw new Error('Failed to update business');
+      await fetchData(); // Refetch all data
+      setEditingBusiness(null);
+      setActiveView('adminClients');
+      alert('Negocio actualizado con éxito!');
+    } catch (error) {
+      console.error(error);
+      alert('Error al actualizar el negocio.');
+    }
   };
 
-  const handleAddBusiness = (newBusiness: Omit<Business, 'id'>) => {
-    setBusinesses(prev => [...prev, {...newBusiness, id: Date.now()}]);
-    alert('Negocio añadido con éxito!');
-    setActiveView('adminDashboard');
+  const handleAddBusiness = async (newBusiness: Omit<Business, 'id'>) => {
+     try {
+      const response = await fetch('/api/businesses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBusiness),
+      });
+      if (!response.ok) throw new Error('Failed to add business');
+      await fetchData(); // Refetch all data
+      alert('Negocio añadido con éxito!');
+      setActiveView('adminDashboard');
+    } catch (error) {
+      console.error(error);
+      alert('Error al añadir el negocio.');
+    }
   };
 
-  const handleToggleBusinessStatus = (businessId: number, currentStatus: boolean) => {
+  const handleToggleBusinessStatus = async (businessId: number, currentStatus: boolean) => {
       const business = businesses.find(b => b.id === businessId);
       if (!business) return;
 
-      if (currentStatus) { // If currently active, deactivate
-          if (window.confirm('¿Estás seguro de que quieres desactivar este anuncio?')) {
-              setBusinesses(businesses.map(b => b.id === businessId ? { ...b, isActive: false } : b));
-          }
-      } else { // If currently inactive, reactivate
+      let newStatus = !currentStatus;
+      let newEndDate = business.promotionEndDate;
+
+      if (!currentStatus) { // If reactivating
            const durationInput = prompt("Selecciona la nueva duración en meses para reactivar el anuncio (ej. 1, 3, 6, 12):", "1");
-           if (durationInput === null) return; // User cancelled
+           if (durationInput === null) return;
            
            const months = parseInt(durationInput, 10);
            if (isNaN(months) || months <= 0) {
@@ -162,19 +158,43 @@ const App: React.FC = () => {
                return;
            }
 
-           const newEndDate = new Date();
-           newEndDate.setMonth(newEndDate.getMonth() + months);
-           
-           setBusinesses(businesses.map(b => b.id === businessId ? { ...b, isActive: true, promotionEndDate: newEndDate.toISOString() } : b));
-           alert(`Negocio reactivado hasta ${newEndDate.toLocaleDateString()}.`);
+           const date = new Date();
+           date.setMonth(date.getMonth() + months);
+           newEndDate = date.toISOString();
+      } else { // If deactivating
+         if (!window.confirm('¿Estás seguro de que quieres desactivar este anuncio?')) {
+            return;
+         }
+      }
+      
+      try {
+        const response = await fetch('/api/businesses', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ ...business, isActive: newStatus, promotionEndDate: newEndDate })
+        });
+        if (!response.ok) throw new Error('Failed to toggle status');
+        await fetchData();
+        if(newStatus) alert(`Negocio reactivado hasta ${new Date(newEndDate).toLocaleDateString()}.`);
+      } catch (error) {
+        console.error(error);
+        alert('Error al cambiar el estado del negocio.');
       }
   };
   
   const getCategoryName = (categoryId: number): string => {
     return categories.find(c => c.id === categoryId)?.name || 'Sin Categoría';
   };
+  
+  const renderLoading = () => (
+    <div className="flex justify-center items-center h-full">
+      <p className="text-lg text-gray-600">Cargando datos...</p>
+    </div>
+  );
 
   const renderContent = () => {
+    if (isLoading) return renderLoading();
+    
     switch (activeView) {
       case 'home':
         return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
@@ -189,7 +209,7 @@ const App: React.FC = () => {
       case 'adminAddBusiness':
         return <AddBusinessPage categories={categories} onAddBusiness={handleAddBusiness} setActiveView={handleViewChange} />;
       case 'adminManageCategories':
-        return <ManageCategoriesPage categories={categories} setCategories={setCategories} />;
+        return <ManageCategoriesPage categories={categories} onCategoriesUpdate={fetchData} />;
        case 'adminClients':
         return <ClientsPage businesses={businesses} onEditBusiness={handleEditClick} />;
        case 'adminManageBusinesses':

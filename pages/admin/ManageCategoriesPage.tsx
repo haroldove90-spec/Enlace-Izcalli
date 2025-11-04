@@ -3,26 +3,48 @@ import { Category } from '../../types';
 
 interface ManageCategoriesPageProps {
   categories: Category[];
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  onCategoriesUpdate: () => void; // Callback to refetch data
 }
 
-export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ categories, setCategories }) => {
+export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ categories, onCategoriesUpdate }) => {
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddCategory = () => {
-    if (newCategoryName.trim()) {
-      const newCategory: Category = {
-        id: Date.now(), // simple unique id
-        name: newCategoryName.trim(),
-      };
-      setCategories(prev => [...prev, newCategory]);
-      setNewCategoryName('');
+  const handleAddCategory = async () => {
+    if (newCategoryName.trim() && !isSubmitting) {
+      setIsSubmitting(true);
+      try {
+        const response = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newCategoryName.trim() }),
+        });
+        if (!response.ok) throw new Error('Failed to add category');
+        setNewCategoryName('');
+        onCategoriesUpdate(); // Refetch categories from parent
+      } catch (error) {
+        console.error(error);
+        alert('Error al añadir la categoría.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
-  const handleDeleteCategory = (id: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría? Esto no afectará a los negocios existentes en ella.')) {
-      setCategories(prev => prev.filter(cat => cat.id !== id));
+  const handleDeleteCategory = async (id: number) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+      try {
+        const response = await fetch(`/api/categories`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
+        if (!response.ok) throw new Error('Failed to delete category');
+        onCategoriesUpdate(); // Refetch categories from parent
+      } catch (error) {
+        console.error(error);
+        alert('Error al eliminar la categoría.');
+      }
     }
   };
 
@@ -37,12 +59,14 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
           onChange={(e) => setNewCategoryName(e.target.value)}
           placeholder="Nombre de la nueva categoría"
           className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-gray-100 text-black placeholder-gray-600"
+          disabled={isSubmitting}
         />
         <button
           onClick={handleAddCategory}
-          className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
+          className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-300"
+          disabled={isSubmitting}
         >
-          Añadir
+          {isSubmitting ? 'Añadiendo...' : 'Añadir'}
         </button>
       </div>
 
