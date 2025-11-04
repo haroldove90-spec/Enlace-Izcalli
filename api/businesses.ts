@@ -5,9 +5,11 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const client = createClient();
-  await client.connect();
+  let client;
   try {
+    client = createClient();
+    await client.connect();
+
     if (request.method === 'GET') {
       const { rows } = await client.sql`SELECT * FROM businesses ORDER BY id;`;
       return response.status(200).json(rows);
@@ -59,8 +61,11 @@ export default async function handler(
     }
   } catch (error) {
     console.error('API Error:', error);
-    return response.status(500).json({ error: 'Internal Server Error' });
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+    return response.status(500).json({ error: 'Internal Server Error', details: errorMessage });
   } finally {
-    await client.end();
+    if (client) {
+        await client.end();
+    }
   }
 }

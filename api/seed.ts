@@ -6,9 +6,11 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const client = createClient();
-  await client.connect();
+  let client;
   try {
+    client = createClient();
+    await client.connect();
+
     // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint
     await client.sql`DROP TABLE IF EXISTS businesses;`;
     await client.sql`DROP TABLE IF EXISTS categories;`;
@@ -75,6 +77,8 @@ export default async function handler(
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return response.status(500).json({ error: 'Failed to seed database', details: errorMessage });
   } finally {
-    await client.end();
+    if (client) {
+        await client.end();
+    }
   }
 }

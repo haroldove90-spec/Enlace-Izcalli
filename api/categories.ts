@@ -5,10 +5,12 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const client = createClient();
-  await client.connect();
+  let client;
   try {
-     if (request.method === 'GET') {
+    client = createClient();
+    await client.connect();
+
+    if (request.method === 'GET') {
       const { rows } = await client.sql`SELECT * FROM categories ORDER BY id;`;
       return response.status(200).json(rows);
     }
@@ -26,7 +28,6 @@ export default async function handler(
       }
 
       await client.sql`INSERT INTO categories (name) VALUES (${trimmedName});`;
-      // Simplified response. Frontend refetches on success anyway.
       return response.status(201).json({ success: true, message: 'Categoría añadida exitosamente.' });
     }
 
@@ -45,8 +46,6 @@ export default async function handler(
     }
   } catch (error) {
      console.error('API Error in categories.ts:', error);
-     // Ensure a proper error message is always sent in JSON format
-     // This prevents serverless function crashes on complex/unserializable error objects
      let errorMessage = 'Ocurrió un error inesperado en el servidor.';
      if (error instanceof Error) {
        errorMessage = error.message;
@@ -55,6 +54,8 @@ export default async function handler(
      }
      return response.status(500).json({ error: errorMessage });
   } finally {
-    await client.end();
+    if (client) {
+        await client.end();
+    }
   }
 }
