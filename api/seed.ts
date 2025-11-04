@@ -7,6 +7,11 @@ export default async function handler(
   response: NextApiResponse,
 ) {
   try {
+    // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint
+    await sql`DROP TABLE IF EXISTS businesses;`;
+    await sql`DROP TABLE IF EXISTS categories;`;
+    console.log('Dropped existing tables for a clean seed.');
+
     // Create categories table
     await sql`
       CREATE TABLE IF NOT EXISTS categories (
@@ -14,7 +19,7 @@ export default async function handler(
         name VARCHAR(255) NOT NULL UNIQUE
       );
     `;
-    console.log('Categories table created or already exists.');
+    console.log('Categories table created.');
 
     // Create businesses table
     await sql`
@@ -36,37 +41,33 @@ export default async function handler(
         promotionEndDate TIMESTAMPTZ
       );
     `;
-    console.log('Businesses table created or already exists.');
+    console.log('Businesses table created.');
 
-    // Insert categories if table is empty
-    const { rows: categoryCheck } = await sql`SELECT COUNT(*) FROM categories;`;
-    if (categoryCheck[0].count === '0') {
-      console.log('Seeding categories...');
-      for (const cat of CATEGORIES) {
-        await sql`INSERT INTO categories (id, name) VALUES (${cat.id}, ${cat.name}) ON CONFLICT (id) DO NOTHING;`;
-      }
-      // After manually inserting with specific IDs, reset the sequence
-      await sql`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`;
-      console.log(`${CATEGORIES.length} categories seeded.`);
+    // Insert categories
+    console.log('Seeding categories...');
+    for (const cat of CATEGORIES) {
+      // Using ON CONFLICT is good practice, though with DROP TABLE it's less critical
+      await sql`INSERT INTO categories (id, name) VALUES (${cat.id}, ${cat.name}) ON CONFLICT (id) DO NOTHING;`;
     }
+    // After manually inserting with specific IDs, reset the sequence for future inserts
+    await sql`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`;
+    console.log(`${CATEGORIES.length} categories seeded.`);
 
-    // Insert businesses if table is empty
-    const { rows: businessCheck } = await sql`SELECT COUNT(*) FROM businesses;`;
-    if (businessCheck[0].count === '0') {
-      console.log('Seeding businesses...');
-      for (const b of BUSINESSES) {
-        await sql`
-            INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
-            VALUES (${b.id}, ${b.name}, ${b.description}, ${b.logoUrl}, ${b.phone}, ${b.whatsapp}, ${b.website}, ${b.categoryId}, ${JSON.stringify(b.services)}, ${JSON.stringify(b.products)}, ${b.isFeatured}, ${b.ownerName}, ${b.ownerEmail}, ${b.isActive}, ${b.promotionEndDate})
-            ON CONFLICT (id) DO NOTHING;
-        `;
-      }
-      // After manually inserting with specific IDs, reset the sequence
-      await sql`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`;
-      console.log(`${BUSINESSES.length} businesses seeded.`);
+    // Insert businesses
+    console.log('Seeding businesses...');
+    for (const b of BUSINESSES) {
+      await sql`
+          INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
+          VALUES (${b.id}, ${b.name}, ${b.description}, ${b.logoUrl}, ${b.phone}, ${b.whatsapp}, ${b.website}, ${b.categoryId}, ${JSON.stringify(b.services)}, ${JSON.stringify(b.products)}, ${b.isFeatured}, ${b.ownerName}, ${b.ownerEmail}, ${b.isActive}, ${b.promotionEndDate})
+          ON CONFLICT (id) DO NOTHING;
+      `;
     }
+    // After manually inserting with specific IDs, reset the sequence for future inserts
+    await sql`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`;
+    console.log(`${BUSINESSES.length} businesses seeded.`);
+    
 
-    return response.status(200).json({ message: 'Database seeded successfully!' });
+    return response.status(200).json({ message: 'Database seeded successfully! Your app should be working now.' });
   } catch (error) {
     console.error('Seeding error:', error);
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);

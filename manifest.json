@@ -2,7 +2,7 @@
   "name": "Enlace Izcalli",
   "short_name": "EnlaceIzcalli",
   "description": "Un directorio comercial digital para encontrar los mejores negocios, productos y servicios en Cuautitlán Izcalli.",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
   "theme_color": "#dc2626",
