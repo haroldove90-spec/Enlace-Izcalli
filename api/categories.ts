@@ -1,17 +1,13 @@
-import { createClient } from '@vercel/postgres';
+import { sql } from '@vercel/postgres';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  let client;
   try {
-    client = createClient();
-    await client.connect();
-
     if (request.method === 'GET') {
-      const { rows } = await client.sql`SELECT * FROM categories ORDER BY id;`;
+      const { rows } = await sql`SELECT * FROM categories ORDER BY id;`;
       return response.status(200).json(rows);
     }
 
@@ -22,12 +18,12 @@ export default async function handler(
       }
       
       const trimmedName = name.trim();
-      const { rowCount } = await client.sql`SELECT 1 FROM categories WHERE LOWER(name) = LOWER(${trimmedName});`;
+      const { rowCount } = await sql`SELECT 1 FROM categories WHERE LOWER(name) = LOWER(${trimmedName});`;
       if (rowCount > 0) {
         return response.status(409).json({ error: `La categoría '${trimmedName}' ya existe.` });
       }
 
-      await client.sql`INSERT INTO categories (name) VALUES (${trimmedName});`;
+      await sql`INSERT INTO categories (name) VALUES (${trimmedName});`;
       return response.status(201).json({ success: true, message: 'Categoría añadida exitosamente.' });
     }
 
@@ -36,7 +32,7 @@ export default async function handler(
         if (!id) {
             return response.status(400).json({ error: 'Category ID is required' });
         }
-        await client.sql`DELETE FROM categories WHERE id = ${id};`;
+        await sql`DELETE FROM categories WHERE id = ${id};`;
         return response.status(200).json({ message: 'Category deleted successfully' });
     }
     
@@ -53,9 +49,5 @@ export default async function handler(
        errorMessage = error;
      }
      return response.status(500).json({ error: errorMessage });
-  } finally {
-    if (client) {
-        await client.end();
-    }
   }
 }

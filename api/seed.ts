@@ -1,4 +1,4 @@
-import { createClient } from '@vercel/postgres';
+import { sql } from '@vercel/postgres';
 import { NextApiResponse, NextApiRequest } from 'next';
 import { CATEGORIES, BUSINESSES } from '../../constants';
 
@@ -6,18 +6,14 @@ export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  let client;
   try {
-    client = createClient();
-    await client.connect();
-
     // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint
-    await client.sql`DROP TABLE IF EXISTS businesses;`;
-    await client.sql`DROP TABLE IF EXISTS categories;`;
+    await sql`DROP TABLE IF EXISTS businesses;`;
+    await sql`DROP TABLE IF EXISTS categories;`;
     console.log('Dropped existing tables for a clean seed.');
 
     // Create categories table
-    await client.sql`
+    await sql`
       CREATE TABLE IF NOT EXISTS categories (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE
@@ -26,7 +22,7 @@ export default async function handler(
     console.log('Categories table created.');
 
     // Create businesses table
-    await client.sql`
+    await sql`
       CREATE TABLE IF NOT EXISTS businesses (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -51,23 +47,23 @@ export default async function handler(
     console.log('Seeding categories...');
     for (const cat of CATEGORIES) {
       // Using ON CONFLICT is good practice, though with DROP TABLE it's less critical
-      await client.sql`INSERT INTO categories (id, name) VALUES (${cat.id}, ${cat.name}) ON CONFLICT (id) DO NOTHING;`;
+      await sql`INSERT INTO categories (id, name) VALUES (${cat.id}, ${cat.name}) ON CONFLICT (id) DO NOTHING;`;
     }
     // After manually inserting with specific IDs, reset the sequence for future inserts
-    await client.sql`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`;
+    await sql`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`;
     console.log(`${CATEGORIES.length} categories seeded.`);
 
     // Insert businesses
     console.log('Seeding businesses...');
     for (const b of BUSINESSES) {
-      await client.sql`
+      await sql`
           INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
           VALUES (${b.id}, ${b.name}, ${b.description}, ${b.logoUrl}, ${b.phone}, ${b.whatsapp}, ${b.website}, ${b.categoryId}, ${JSON.stringify(b.services)}, ${JSON.stringify(b.products)}, ${b.isFeatured}, ${b.ownerName}, ${b.ownerEmail}, ${b.isActive}, ${b.promotionEndDate})
           ON CONFLICT (id) DO NOTHING;
       `;
     }
     // After manually inserting with specific IDs, reset the sequence for future inserts
-    await client.sql`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`;
+    await sql`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`;
     console.log(`${BUSINESSES.length} businesses seeded.`);
     
 
@@ -76,9 +72,5 @@ export default async function handler(
     console.error('Seeding error:', error);
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return response.status(500).json({ error: 'Failed to seed database', details: errorMessage });
-  } finally {
-    if (client) {
-        await client.end();
-    }
   }
 }
