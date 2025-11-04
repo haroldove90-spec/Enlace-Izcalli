@@ -9,6 +9,14 @@ export const CATEGORIES: Category[] = [
   { id: 6, name: 'Hogar y Jardín' },
 ];
 
+// Helper to create future dates for promotions
+const createEndDate = (months: number): string => {
+  const date = new Date();
+  date.setMonth(date.getMonth() + months);
+  return date.toISOString();
+};
+
+
 export const BUSINESSES: Business[] = [
   {
     id: 1,
@@ -24,6 +32,8 @@ export const BUSINESSES: Business[] = [
     isFeatured: true,
     ownerName: "Carlos Pérez",
     ownerEmail: "carlos.perez@example.com",
+    isActive: true,
+    promotionEndDate: createEndDate(3),
   },
   {
     id: 2,
@@ -39,6 +49,8 @@ export const BUSINESSES: Business[] = [
     isFeatured: true,
     ownerName: "Dra. Ana Gómez",
     ownerEmail: "ana.gomez@example.com",
+    isActive: true,
+    promotionEndDate: createEndDate(6),
   },
   {
     id: 3,
@@ -54,6 +66,8 @@ export const BUSINESSES: Business[] = [
     isFeatured: false,
     ownerName: "Lic. Roberto Díaz",
     ownerEmail: "roberto.diaz@example.com",
+    isActive: true,
+    promotionEndDate: createEndDate(1),
   },
   {
     id: 4,
@@ -69,6 +83,8 @@ export const BUSINESSES: Business[] = [
     isFeatured: true,
     ownerName: "Sofía Martínez",
     ownerEmail: "sofia.martinez@example.com",
+    isActive: true,
+    promotionEndDate: createEndDate(12),
   },
   {
     id: 5,
@@ -84,6 +100,8 @@ export const BUSINESSES: Business[] = [
     isFeatured: false,
     ownerName: "Jorge Hernández",
     ownerEmail: "jorge.hernandez@example.com",
+    isActive: false,
+    promotionEndDate: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString(), // Expired
   },
   {
     id: 6,
@@ -99,5 +117,7 @@ export const BUSINESSES: Business[] = [
     isFeatured: false,
     ownerName: "Laura Torres",
     ownerEmail: "laura.torres@example.com",
+    isActive: true,
+    promotionEndDate: createEndDate(2),
   }
 ];

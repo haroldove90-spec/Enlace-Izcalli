@@ -11,11 +11,12 @@ import { AddBusinessPage } from './pages/admin/AddBusinessPage';
 import { ManageCategoriesPage } from './pages/admin/ManageCategoriesPage';
 import { ClientsPage } from './pages/admin/ClientsPage';
 import { EditBusinessPage } from './pages/admin/EditBusinessPage';
+import { ManageBusinessesPage } from './pages/admin/ManageBusinessesPage';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { CATEGORIES as initialCategories, BUSINESSES as initialBusinesses } from './constants';
 import { Business, Category } from './types';
 
-export type View = 'home' | 'categories' | 'advertise' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness';
+export type View = 'home' | 'categories' | 'advertise' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
 export type UserRole = 'user' | 'admin';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -42,6 +43,19 @@ const App: React.FC = () => {
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+  
+  // Effect to check for expired promotions on app load
+  useEffect(() => {
+    const now = new Date();
+    setBusinesses(prevBusinesses => 
+      prevBusinesses.map(b => {
+        if (b.isActive && new Date(b.promotionEndDate) < now) {
+          return { ...b, isActive: false };
+        }
+        return b;
+      })
+    );
   }, []);
 
   const handleInstallClick = () => {
@@ -73,7 +87,7 @@ const App: React.FC = () => {
   const handleUpdateBusiness = (updatedBusiness: Business) => {
     setBusinesses(businesses.map(b => b.id === updatedBusiness.id ? updatedBusiness : b));
     setEditingBusiness(null);
-    setActiveView('adminClients');
+    setActiveView('adminClients'); // Or maybe adminManageBusinesses
     alert('Negocio actualizado con éxito!');
   };
 
@@ -81,6 +95,32 @@ const App: React.FC = () => {
     setBusinesses(prev => [...prev, {...newBusiness, id: Date.now()}]);
     alert('Negocio añadido con éxito!');
     setActiveView('adminDashboard');
+  };
+
+  const handleToggleBusinessStatus = (businessId: number, currentStatus: boolean) => {
+      const business = businesses.find(b => b.id === businessId);
+      if (!business) return;
+
+      if (currentStatus) { // If currently active, deactivate
+          if (window.confirm('¿Estás seguro de que quieres desactivar este anuncio?')) {
+              setBusinesses(businesses.map(b => b.id === businessId ? { ...b, isActive: false } : b));
+          }
+      } else { // If currently inactive, reactivate
+           const durationInput = prompt("Selecciona la nueva duración en meses para reactivar el anuncio (ej. 1, 3, 6, 12):", "1");
+           if (durationInput === null) return; // User cancelled
+           
+           const months = parseInt(durationInput, 10);
+           if (isNaN(months) || months <= 0) {
+               alert("Por favor, introduce un número válido de meses.");
+               return;
+           }
+
+           const newEndDate = new Date();
+           newEndDate.setMonth(newEndDate.getMonth() + months);
+           
+           setBusinesses(businesses.map(b => b.id === businessId ? { ...b, isActive: true, promotionEndDate: newEndDate.toISOString() } : b));
+           alert(`Negocio reactivado hasta ${newEndDate.toLocaleDateString()}.`);
+      }
   };
   
   const getCategoryName = (categoryId: number): string => {
@@ -90,7 +130,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeView) {
       case 'home':
-        return <HomePage categories={categories} businesses={businesses} getCategoryName={getCategoryName} />;
+        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
       case 'categories':
         return <CategoriesPage categories={categories} />;
       case 'advertise':
@@ -105,10 +145,12 @@ const App: React.FC = () => {
         return <ManageCategoriesPage categories={categories} setCategories={setCategories} />;
        case 'adminClients':
         return <ClientsPage businesses={businesses} onEditBusiness={handleEditClick} />;
+       case 'adminManageBusinesses':
+        return <ManageBusinessesPage businesses={businesses} onToggleStatus={handleToggleBusinessStatus} onEditBusiness={handleEditClick} />;
       case 'adminEditBusiness':
         return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} /> : <p>No business selected for editing.</p>;
       default:
-        return <HomePage categories={categories} businesses={businesses} getCategoryName={getCategoryName} />;
+        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
     }
   };
 

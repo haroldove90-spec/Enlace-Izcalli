@@ -8,30 +8,37 @@ interface BusinessFormProps {
   onCancel: () => void;
 }
 
-// Helper components for form fields
+// Helper components for form fields with updated styling
 const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ name, label, ...props }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
-    <input id={name} name={name} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" />
+    <input id={name} name={name} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-gray-100 text-black" />
   </div>
 );
 
 const TextAreaField: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ name, label, ...props }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
-    <textarea id={name} name={name} rows={3} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" />
+    <textarea id={name} name={name} rows={3} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-gray-100 text-black" />
   </div>
 );
 
-const SelectField: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string, options: Category[] }> = ({ name, label, options, ...props }) => (
+const SelectField: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string, options: {id: string | number, name: string}[] }> = ({ name, label, options, ...props }) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
-    <select id={name} name={name} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
-      {options.map((opt: Category) => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+    <select id={name} name={name} {...props} className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-black rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+      {options.map((opt) => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
     </select>
   </div>
 );
 
+const promotionDurations = [
+    { id: '1', name: '1 Mes' },
+    { id: '2', name: '2 Meses' },
+    { id: '3', name: '3 Meses' },
+    { id: '6', name: '6 Meses' },
+    { id: '12', name: '12 Meses' },
+];
 
 export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit, initialData, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -47,6 +54,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
     isFeatured: initialData?.isFeatured || false,
     ownerName: initialData?.ownerName || '',
     ownerEmail: initialData?.ownerEmail || '',
+    promotionDuration: '1', // Default promotion duration for new businesses
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -66,9 +74,20 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if(initialData) {
-        onSubmit({ ...initialData, ...formData });
+        const { promotionDuration, ...dataToSubmit } = formData;
+        onSubmit({ ...initialData, ...dataToSubmit });
     } else {
-        onSubmit(formData as Omit<Business, 'id'>);
+        const { promotionDuration, ...restOfForm } = formData;
+        const promotionMonths = parseInt(promotionDuration, 10);
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + promotionMonths);
+        
+        const newBusinessData = {
+            ...restOfForm,
+            promotionEndDate: endDate.toISOString(),
+            isActive: true,
+        };
+        onSubmit(newBusinessData);
     }
   };
 
@@ -98,6 +117,18 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
       </div>
       <InputField name="services" label="Servicios (separados por coma)" value={formData.services.join(', ')} onChange={(e) => handleArrayChange(e, 'services')} />
       <InputField name="products" label="Productos (separados por coma)" value={formData.products.join(', ')} onChange={(e) => handleArrayChange(e, 'products')} />
+      
+      {!initialData && (
+        <SelectField name="promotionDuration" label="Duración de la Promoción" value={formData.promotionDuration} onChange={handleChange} options={promotionDurations} required />
+      )}
+      
+      {initialData && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Vencimiento de la Promoción</label>
+          <p className="mt-1 text-sm text-gray-900 bg-gray-100 p-2 rounded-md">{new Date(initialData.promotionEndDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+      )}
+
       <div className="flex items-center">
         <input type="checkbox" id="isFeatured" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
         <label htmlFor="isFeatured" className="ml-2 block text-sm font-medium text-gray-700">¿Es un negocio destacado?</label>

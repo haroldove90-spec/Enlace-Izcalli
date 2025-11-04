@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon } from './Icons';
+import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
 import { View, UserRole } from '../App';
 
 interface SidebarProps {
@@ -19,6 +19,7 @@ const userNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
 const adminNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
   { id: 'adminDashboard', name: 'Dashboard', icon: ChartBarIcon },
   { id: 'adminAddBusiness', name: 'Añadir Negocio', icon: PlusCircleIcon },
+  { id: 'adminManageBusinesses', name: 'Negocios', icon: BriefcaseIcon },
   { id: 'adminManageCategories', name: 'Categorías', icon: TagIcon },
   { id: 'adminClients', name: 'Clientes', icon: UsersIcon },
 ];

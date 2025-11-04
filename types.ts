@@ -16,5 +16,7 @@ export interface Business {
   products: string[];
   isFeatured: boolean;
   ownerName: string;
-  ownerEmail: string;
+  ownerEmail:string;
+  isActive: boolean;
+  promotionEndDate: string; // ISO date string
 }
