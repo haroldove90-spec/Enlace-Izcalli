@@ -10,6 +10,11 @@ export interface Business {
   whatsapp: string;
   website: string;
   isFeatured: boolean;
+  // Admin fields
+  email?: string;
+  ownerName?: string;
+  promotions?: string[];
+  location?: string;
 }
 
 export interface Category {

@@ -6,10 +6,12 @@ import { HomePage } from './pages/HomePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { AdvertisePage } from './pages/AdvertisePage';
 import { ZonesPage } from './pages/ZonesPage';
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+import { AddBusinessPage } from './pages/admin/AddBusinessPage';
 import { BUSINESSES, CATEGORIES } from './constants';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 
-type View = 'home' | 'categories' | 'advertise' | 'zones';
+export type View = 'home' | 'categories' | 'advertise' | 'zones' | 'adminDashboard' | 'adminAddBusiness';
 
 // Define the BeforeInstallPromptEvent interface for use in state
 interface BeforeInstallPromptEvent extends Event {
@@ -27,9 +29,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handler = (e: Event) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
@@ -41,19 +41,14 @@ const App: React.FC = () => {
   }, []);
 
   const handleInstallClick = () => {
-    if (!deferredPrompt) {
-      return;
-    }
-    // Show the install prompt
+    if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted the install prompt');
       } else {
         console.log('User dismissed the install prompt');
       }
-      // We can only use the prompt once, clear it.
       setDeferredPrompt(null);
     });
   };
@@ -72,6 +67,10 @@ const App: React.FC = () => {
         return <AdvertisePage />;
       case 'zones':
         return <ZonesPage />;
+      case 'adminDashboard':
+        return <AdminDashboardPage setActiveView={setActiveView} />;
+      case 'adminAddBusiness':
+        return <AddBusinessPage setActiveView={setActiveView} />;
       default:
         return <HomePage businesses={BUSINESSES} categories={CATEGORIES} />;
     }

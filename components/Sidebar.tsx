@@ -1,18 +1,18 @@
 import React from 'react';
-import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon } from './Icons';
-
-type View = 'home' | 'categories' | 'advertise' | 'zones';
+import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, ShieldCheckIcon } from './Icons';
+import { View } from '../App';
 
 interface SidebarProps {
   activeView: View;
   setActiveView: (view: View) => void;
 }
 
-const navLinks: { id: View; name: string; href: string; icon: React.FC<any> }[] = [
-  { id: 'home', name: 'Home', href: '#', icon: HomeIcon },
-  { id: 'categories', name: 'Categorias', href: '#', icon: CategoryIcon },
-  { id: 'advertise', name: 'Anunciate', href: '#', icon: MegaphoneIcon },
-  { id: 'zones', name: 'Zonas', href: '#', icon: MapIcon },
+const navLinks: { id: View; name: string; icon: React.FC<any> }[] = [
+  { id: 'home', name: 'Home', icon: HomeIcon },
+  { id: 'categories', name: 'Categorias', icon: CategoryIcon },
+  { id: 'advertise', name: 'Anunciate', icon: MegaphoneIcon },
+  { id: 'zones', name: 'Zonas', icon: MapIcon },
+  { id: 'adminDashboard', name: 'Admin', icon: ShieldCheckIcon },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) =
             <li key={link.id}>
               <button 
                 onClick={() => setActiveView(link.id)}
-                className={`w-full flex items-center px-4 py-3 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:text-red-600 transition-colors duration-200 text-left ${activeView === link.id ? 'bg-red-50 text-red-600' : ''}`}
+                className={`w-full flex items-center px-4 py-3 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:text-red-600 transition-colors duration-200 text-left ${activeView.startsWith('admin') && link.id.startsWith('admin') ? 'bg-red-50 text-red-600' : activeView === link.id ? 'bg-red-50 text-red-600' : ''}`}
               >
                 <link.icon className="w-6 h-6 mr-3" />
                 <span>{link.name}</span>
