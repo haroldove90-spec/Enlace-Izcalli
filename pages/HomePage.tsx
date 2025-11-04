@@ -30,6 +30,11 @@ export const HomePage: React.FC<HomePageProps> = ({ businesses, categories }) =>
 
   return (
     <>
+      <img 
+        src="https://appdesignmex.com/enlaceizcallichica.jpg" 
+        alt="Banner principal de Enlace Izcalli"
+        className="w-full h-auto object-cover rounded-xl shadow-lg mb-12"
+      />
       <CategoryFilter 
         categories={sortedCategories}
         selectedFilter={selectedFilter}
