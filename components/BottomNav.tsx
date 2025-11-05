@@ -11,7 +11,7 @@ interface BottomNavProps {
 const userNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
   { id: 'home', name: 'Home', icon: HomeIcon },
   { id: 'categories', name: 'Categorias', icon: CategoryIcon },
-  { id: 'advertise', name: 'Anunciate', icon: MegaphoneIcon },
+  { id: 'notifications', name: 'Notificaciones', icon: MegaphoneIcon },
   { id: 'zones', name: 'Zonas', icon: MapIcon },
 ];
 

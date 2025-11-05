@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { HomePage } from './pages/HomePage';
 import { CategoriesPage } from './pages/CategoriesPage';
-import { AdvertisePage } from './pages/AdvertisePage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { ZonesPage } from './pages/ZonesPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AddBusinessPage } from './pages/admin/AddBusinessPage';
@@ -16,7 +16,7 @@ import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { Business, Category } from './types';
 import { BUSINESSES, CATEGORIES } from './constants';
 
-export type View = 'home' | 'categories' | 'advertise' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
+export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
 export type UserRole = 'user' | 'admin';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -224,8 +224,8 @@ const App: React.FC = () => {
         return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
       case 'categories':
         return <CategoriesPage categories={categories} />;
-      case 'advertise':
-        return <AdvertisePage />;
+      case 'notifications':
+        return <NotificationsPage />;
       case 'zones':
         return <ZonesPage />;
       case 'adminDashboard':

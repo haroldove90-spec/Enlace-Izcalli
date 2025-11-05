@@ -16,8 +16,8 @@ export default async function handler(
     // Wrap all operations in a single transaction for performance and atomicity
     await client.query('BEGIN');
 
-    // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint.
-    // Using CASCADE to handle any dependent objects gracefully.
+    // Drop tables first to ensure a clean slate
+    await client.query('DROP TABLE IF EXISTS subscriptions CASCADE;');
     await client.query('DROP TABLE IF EXISTS businesses CASCADE;');
     await client.query('DROP TABLE IF EXISTS categories CASCADE;');
     console.log('Dropped existing tables for a clean seed.');
@@ -52,6 +52,17 @@ export default async function handler(
       );
     `);
     console.log('Businesses table created.');
+    
+    // Create subscriptions table for push notifications
+    await client.query(`
+      CREATE TABLE subscriptions (
+          id SERIAL PRIMARY KEY,
+          endpoint TEXT NOT NULL UNIQUE,
+          subscription_data JSONB NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+    console.log('Subscriptions table created.');
 
     // Insert categories
     console.log('Seeding categories...');

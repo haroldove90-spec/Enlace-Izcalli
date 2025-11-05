@@ -44,3 +44,34 @@ self.addEventListener('activate', event => {
     })
   );
 });
+
+// Listener for push notifications
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : { title: 'Enlace Izcalli', body: '¡Hay nuevas actualizaciones para ti!' };
+  const title = data.title;
+  const options = {
+    body: data.body,
+    icon: 'https://appdesignmex.com/enlaceizcalliicono.png',
+    badge: 'https://appdesignmex.com/enlaceizcalliicono.png'
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Listener for notification click
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      if (clientList.length > 0) {
+        let client = clientList[0];
+        for (let i = 0; i < clientList.length; i++) {
+          if (clientList[i].focused) {
+            client = clientList[i];
+          }
+        }
+        return client.focus();
+      }
+      return clients.openWindow('/');
+    })
+  );
+});
