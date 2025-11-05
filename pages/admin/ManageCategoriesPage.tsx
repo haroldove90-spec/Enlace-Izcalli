@@ -11,17 +11,14 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getErrorMessage = async (response: Response, defaultMessage: string): Promise<string> => {
+      const errorText = await response.text();
       try {
-          const errorData = await response.json();
+          // Attempt to parse the text as a JSON object
+          const errorData = JSON.parse(errorText);
           return errorData.error || JSON.stringify(errorData);
       } catch (e) {
-          // If JSON parsing fails, try to get the text body
-          try {
-            const textError = await response.text();
-            return textError || defaultMessage;
-          } catch {
-            return defaultMessage;
-          }
+          // If JSON parsing fails, it's not a JSON response. Return the raw text.
+          return errorText || defaultMessage;
       }
   };
 

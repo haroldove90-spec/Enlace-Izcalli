@@ -29,13 +29,14 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
       const response = await fetch('/api/seed');
       
       if (!response.ok) {
-        let errorDetails = 'Ocurrió un error en el servidor.';
+        const errorText = await response.text();
+        let errorDetails = errorText;
         try {
-            const errorData = await response.json();
+            // Attempt to parse the text as JSON for a more structured error message.
+            const errorData = JSON.parse(errorText);
             errorDetails = errorData.details || errorData.error || JSON.stringify(errorData);
         } catch (jsonError) {
-            // If JSON parsing fails, it's not a JSON response, so get raw text.
-            errorDetails = await response.text();
+            // If parsing fails, it's not a JSON response; use the raw text.
         }
         throw new Error(errorDetails);
       }
