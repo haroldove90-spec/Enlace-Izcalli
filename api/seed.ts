@@ -8,7 +8,6 @@ export default async function handler(
 ) {
   const client = new Client({
       connectionString: process.env.SUPABASE_CONNECTION_STRING,
-      // Fix: Force SSL connection required by Supabase from external environments like Vercel.
       ssl: true,
   });
   try {

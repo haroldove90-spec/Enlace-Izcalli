@@ -22,12 +22,14 @@ export default async function handler(
       if (!name || !ownerName || !ownerEmail) {
          return response.status(400).json({ error: 'Name, owner name, and email are required' });
       }
+      // Fix: The result from the insert operation was declaring a 'data' variable that was unused.
       const { error } = await supabase
         .from('businesses')
         .insert({ name, ownerName, ownerEmail, ...rest })
         .select();
+
       if (error) throw error;
-      // After insert, Supabase returns an array, so we return all businesses for consistency with old API
+      
       const { data: allBusinesses, error: fetchAllError } = await supabase.from('businesses').select('*').order('id');
       if(fetchAllError) throw fetchAllError;
 
