@@ -28,11 +28,14 @@ export const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, barColor =
 
   return (
     <div 
-        className="h-64 flex items-end justify-around space-x-2 pt-4"
-        style={{ minWidth: `${minChartWidth}rem` }}
+        className="h-64 grid items-end gap-x-2 pt-4"
+        style={{ 
+          gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))`,
+          minWidth: `${minChartWidth}rem`
+        }}
     >
       {data.map((item, index) => (
-        <div key={index} className="flex-1 flex flex-col items-center h-full text-center">
+        <div key={index} className="flex flex-col items-center h-full text-center">
           <div 
             className="w-full flex items-end justify-center"
             style={{ height: 'calc(100% - 1.5rem)' }}

@@ -34,6 +34,7 @@ const App: React.FC = () => {
   const [editingBusiness, setEditingBusiness] = useState<Business | null>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -68,9 +69,11 @@ const App: React.FC = () => {
 
       setBusinesses(finalBusinesses);
       setCategories(finalCategories);
+      setUsingFallbackData(false);
 
     } catch (error) {
       console.error("Failed to fetch data, falling back to local mock data:", error);
+      setUsingFallbackData(true);
       // Fallback to local data on API failure
       let finalBusinesses = BUSINESSES;
       const finalCategories = CATEGORIES;
@@ -226,7 +229,7 @@ const App: React.FC = () => {
       case 'zones':
         return <ZonesPage />;
       case 'adminDashboard':
-        return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} />;
+        return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} usingFallbackData={usingFallbackData} />;
       case 'adminAddBusiness':
         return <AddBusinessPage categories={categories} onAddBusiness={handleAddBusiness} setActiveView={handleViewChange} />;
       case 'adminManageCategories':
@@ -245,7 +248,15 @@ const App: React.FC = () => {
   return (
     <div className="flex bg-gray-100 min-h-screen">
       <Sidebar activeView={activeView} setActiveView={handleViewChange} currentUserRole={currentUserRole} setCurrentUserRole={setCurrentUserRole}/>
-      <div className="flex-1 flex flex-col md:ml-64">
+      <div className="flex-1 flex flex-col md:ml-64 overflow-x-hidden">
+        {usingFallbackData && (
+            <div className="bg-red-500 text-white text-center p-2 text-sm font-semibold sticky top-0 z-50 md:relative">
+              <span>Error de conexión. Mostrando datos de ejemplo.</span>
+              <button onClick={() => handleViewChange('adminDashboard')} className="underline ml-2 font-bold hover:text-red-200">
+                  Inicializar Base de Datos
+              </button>
+            </div>
+        )}
         <Header />
         <main className="flex-grow p-4 md:p-8 pb-20 md:pb-8">
           {renderContent()}

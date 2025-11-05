@@ -8,9 +8,10 @@ interface AdminDashboardPageProps {
   businesses: Business[];
   categories: Category[];
   setActiveView: (view: View) => void;
+  usingFallbackData?: boolean;
 }
 
-export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ businesses, categories }) => {
+export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ businesses, categories, usingFallbackData }) => {
   const totalBusinesses = businesses.length;
   const totalCategories = categories.length;
   const featuredBusinesses = businesses.filter(b => b.isFeatured).length;
@@ -47,8 +48,16 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
         window.location.reload();
       }, 2000);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
-      setSeedError(`Error: ${message}`);
+      const rawMessage = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
+      console.error("Database seed error:", rawMessage); // Log for debugging
+
+      let friendlyMessage = 'No se pudo inicializar la base de datos. ';
+      if (rawMessage.includes('FUNCTION_INVOCATION_FAILED')) {
+        friendlyMessage += 'La función del servidor falló. Esto puede ser un problema temporal de la plataforma. Por favor, inténtelo de nuevo más tarde.';
+      } else {
+        friendlyMessage += 'Ocurrió un error en el servidor. Si el problema persiste, contacte a soporte.';
+      }
+      setSeedError(`${friendlyMessage}\n\nDetalles técnicos:\n${rawMessage}`);
     } finally {
       setIsSeeding(false);
     }
@@ -66,8 +75,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
       </div>
       
       <div className="bg-orange-50 border-l-4 border-orange-400 text-orange-700 p-4 mb-8 rounded-r-lg" role="alert">
-        <p className="font-bold">Inicialización de la Base de Datos</p>
-        <p className="text-sm">Si los datos no se cargan o ves errores, es posible que la base de datos necesite ser inicializada. Este proceso borrará los datos actuales y los reemplazará con datos de prueba.</p>
+        <p className="font-bold">
+            {usingFallbackData ? "Atención: Se Requiere Inicialización" : "Inicialización de la Base de Datos"}
+        </p>
+        <p className="text-sm">
+            {usingFallbackData
+                ? "La aplicación no pudo conectar con la base de datos y está mostrando datos de prueba. Presiona el botón para crear las tablas y cargar los datos iniciales."
+                : "Si los datos no se cargan o ves errores, es posible que la base de datos necesite ser inicializada. Este proceso borrará los datos actuales y los reemplazará con datos de prueba."
+            }
+        </p>
         <button
           onClick={handleSeedDatabase}
           disabled={isSeeding}
@@ -76,7 +92,12 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
           {isSeeding ? 'Inicializando...' : 'Inicializar Base de Datos'}
         </button>
         {seedMessage && <p className="mt-2 text-sm font-semibold text-green-700">{seedMessage}</p>}
-        {seedError && <p className="mt-2 text-sm font-semibold text-red-700">{seedError}</p>}
+        {seedError && (
+             <div className="mt-3 bg-red-50 border border-red-200 text-red-900 p-4 rounded-md text-sm" role="alert">
+                <p className="font-bold">Ocurrió un error</p>
+                <pre className="whitespace-pre-wrap font-mono text-xs mt-2 p-2 bg-red-100 rounded text-red-800">{seedError}</pre>
+            </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

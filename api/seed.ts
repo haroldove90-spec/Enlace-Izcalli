@@ -1,6 +1,6 @@
 import { createClient } from '@vercel/postgres';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { CATEGORIES, BUSINESSES } from '../../constants';
+import { CATEGORIES, BUSINESSES } from '../constants';
 
 export default async function handler(
   request: VercelRequest,
@@ -20,7 +20,7 @@ export default async function handler(
 
     // Create categories table
     await client.sql`
-      CREATE TABLE IF NOT EXISTS categories (
+      CREATE TABLE categories (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE
       );
@@ -29,7 +29,7 @@ export default async function handler(
 
     // Create businesses table
     await client.sql`
-      CREATE TABLE IF NOT EXISTS businesses (
+      CREATE TABLE businesses (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         description TEXT,
@@ -49,24 +49,28 @@ export default async function handler(
     `;
     console.log('Businesses table created.');
 
-    // Insert categories
+    // Insert categories in parallel
     console.log('Seeding categories...');
-    for (const cat of CATEGORIES) {
-      await client.sql`INSERT INTO categories (id, name) VALUES (${cat.id}, ${cat.name}) ON CONFLICT (id) DO NOTHING;`;
-    }
+    await Promise.all(
+      CATEGORIES.map(cat => 
+        client.sql`INSERT INTO categories (id, name) VALUES (${cat.id}, ${cat.name}) ON CONFLICT (id) DO NOTHING;`
+      )
+    );
     // After manually inserting with specific IDs, reset the sequence for future inserts
     await client.sql`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`;
     console.log(`${CATEGORIES.length} categories seeded.`);
 
-    // Insert businesses
+    // Insert businesses in parallel
     console.log('Seeding businesses...');
-    for (const b of BUSINESSES) {
-      await client.sql`
-          INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
-          VALUES (${b.id}, ${b.name}, ${b.description}, ${b.logoUrl}, ${b.phone}, ${b.whatsapp}, ${b.website}, ${b.categoryId}, ${JSON.stringify(b.services)}, ${JSON.stringify(b.products)}, ${b.isFeatured}, ${b.ownerName}, ${b.ownerEmail}, ${b.isActive}, ${b.promotionEndDate})
-          ON CONFLICT (id) DO NOTHING;
-      `;
-    }
+    await Promise.all(
+      BUSINESSES.map(b => 
+        client.sql`
+            INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
+            VALUES (${b.id}, ${b.name}, ${b.description}, ${b.logoUrl}, ${b.phone}, ${b.whatsapp}, ${b.website}, ${b.categoryId}, ${JSON.stringify(b.services)}, ${JSON.stringify(b.products)}, ${b.isFeatured}, ${b.ownerName}, ${b.ownerEmail}, ${b.isActive}, ${b.promotionEndDate})
+            ON CONFLICT (id) DO NOTHING;
+        `
+      )
+    );
     // After manually inserting with specific IDs, reset the sequence for future inserts
     await client.sql`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`;
     console.log(`${BUSINESSES.length} businesses seeded.`);
