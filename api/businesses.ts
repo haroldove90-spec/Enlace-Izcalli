@@ -1,13 +1,16 @@
-import { sql } from '@vercel/postgres';
+import { createClient } from '@vercel/postgres';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
+  const client = createClient();
   try {
+    await client.connect();
+
     if (request.method === 'GET') {
-      const { rows } = await sql`SELECT * FROM businesses ORDER BY id;`;
+      const { rows } = await client.sql`SELECT * FROM businesses ORDER BY id;`;
       return response.status(200).json(rows);
     } 
     
@@ -16,11 +19,11 @@ export default async function handler(
       if (!name || !ownerName || !ownerEmail) {
          return response.status(400).json({ error: 'Name, owner name, and email are required' });
       }
-      await sql`
+      await client.sql`
         INSERT INTO businesses (name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, promotionEndDate, isActive)
         VALUES (${name}, ${description}, ${logoUrl}, ${phone}, ${whatsapp}, ${website}, ${categoryId}, ${JSON.stringify(services)}, ${JSON.stringify(products)}, ${isFeatured}, ${ownerName}, ${ownerEmail}, ${promotionEndDate}, ${isActive});
       `;
-      const { rows } = await sql`SELECT * FROM businesses ORDER BY id;`;
+      const { rows } = await client.sql`SELECT * FROM businesses ORDER BY id;`;
       return response.status(201).json(rows);
     }
 
@@ -29,7 +32,7 @@ export default async function handler(
         if (!id) {
             return response.status(400).json({ error: 'Business ID is required for update' });
         }
-        await sql`
+        await client.sql`
             UPDATE businesses
             SET name = ${name}, 
                 description = ${description}, 
@@ -47,7 +50,7 @@ export default async function handler(
                 isActive = ${isActive}
             WHERE id = ${id};
         `;
-        const { rows } = await sql`SELECT * FROM businesses WHERE id = ${id};`;
+        const { rows } = await client.sql`SELECT * FROM businesses WHERE id = ${id};`;
         return response.status(200).json(rows[0]);
     }
 
@@ -59,5 +62,7 @@ export default async function handler(
     console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
     return response.status(500).json({ error: 'Internal Server Error', details: errorMessage });
+  } finally {
+    await client.end();
   }
 }
