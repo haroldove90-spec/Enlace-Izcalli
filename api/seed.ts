@@ -1,4 +1,4 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { CATEGORIES, BUSINESSES } from '../constants';
 
@@ -6,12 +6,14 @@ export default async function handler(
   _request: VercelRequest,
   response: VercelResponse,
 ) {
-  // Use POSTGRES_URL from Vercel Postgres
-  const client = new Client({
+  // Use a connection pool for better connection management in serverless environments.
+  const pool = new Pool({
       connectionString: process.env.POSTGRES_URL,
   });
+  
+  const client = await pool.connect();
+
   try {
-    await client.connect();
     await client.query('BEGIN');
 
     // Drop tables to ensure a clean slate, especially if column names need correction.
@@ -100,6 +102,6 @@ export default async function handler(
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return response.status(500).json({ error: 'Failed to seed database', details: errorMessage });
   } finally {
-    await client.end();
+    client.release();
   }
 }

@@ -55,6 +55,10 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
     ownerName: initialData?.ownerName || '',
     ownerEmail: initialData?.ownerEmail || '',
     promotionDuration: '1', // Default promotion duration for new businesses
+    // Fix: Add missing fields to form state to satisfy the Business type.
+    address: initialData?.address || '',
+    latitude: initialData?.latitude || 0,
+    longitude: initialData?.longitude || 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -63,7 +67,9 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
         const { checked } = e.target;
         setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-        setFormData(prev => ({ ...prev, [name]: name === 'categoryId' ? Number(value) : value }));
+        // Fix: Ensure latitude and longitude are stored as numbers.
+        const isNumericField = name === 'categoryId' || name === 'latitude' || name === 'longitude';
+        setFormData(prev => ({ ...prev, [name]: isNumericField ? Number(value) : value }));
     }
   };
   
@@ -114,6 +120,12 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
         <InputField name="phone" label="Teléfono" value={formData.phone} onChange={handleChange} />
         <InputField name="whatsapp" label="WhatsApp (con código de país)" value={formData.whatsapp} onChange={handleChange} />
         <InputField name="website" label="Sitio Web" value={formData.website} onChange={handleChange} />
+      </div>
+      {/* Fix: Add form fields for address and coordinates. */}
+      <TextAreaField name="address" label="Dirección" value={formData.address} onChange={handleChange} required />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField name="latitude" label="Latitud" type="number" step="any" value={formData.latitude} onChange={handleChange} required />
+          <InputField name="longitude" label="Longitud" type="number" step="any" value={formData.longitude} onChange={handleChange} required />
       </div>
       <InputField name="services" label="Servicios (separados por coma)" value={formData.services.join(', ')} onChange={(e) => handleArrayChange(e, 'services')} />
       <InputField name="products" label="Productos (separados por coma)" value={formData.products.join(', ')} onChange={(e) => handleArrayChange(e, 'products')} />
