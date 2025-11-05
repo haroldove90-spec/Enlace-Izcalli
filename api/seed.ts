@@ -1,10 +1,10 @@
 import { createClient } from '@vercel/postgres';
-import { NextApiResponse, NextApiRequest } from 'next';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { CATEGORIES, BUSINESSES } from '../../constants';
 
 export default async function handler(
-  request: NextApiRequest,
-  response: NextApiResponse,
+  request: VercelRequest,
+  response: VercelResponse,
 ) {
   const client = createClient();
   try {
