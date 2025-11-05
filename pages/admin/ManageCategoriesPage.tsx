@@ -72,10 +72,10 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto">
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 animate-fade-in max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Gestionar Categorías</h1>
       
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <input
           type="text"
           value={newCategoryName}
@@ -86,26 +86,30 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
         />
         <button
           onClick={handleAddCategory}
-          className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-300"
+          className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-300 flex-shrink-0"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Añadiendo...' : 'Añadir'}
         </button>
       </div>
 
-      <ul className="space-y-3">
-        {categories.map(category => (
-          <li key={category.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-            <span className="text-gray-800">{category.name}</span>
-            <button
-              onClick={() => handleDeleteCategory(category.id)}
-              className="text-red-600 hover:text-red-800 font-semibold"
-            >
-              Eliminar
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="border rounded-lg overflow-hidden">
+        <ul className="divide-y divide-gray-200">
+          {categories.length > 0 ? categories.map(category => (
+            <li key={category.id} className="flex justify-between items-center p-3 sm:p-4 gap-4">
+              <span className="text-gray-800 break-words flex-1 min-w-0">{category.name}</span>
+              <button
+                onClick={() => handleDeleteCategory(category.id)}
+                className="text-red-600 hover:text-red-800 font-semibold flex-shrink-0"
+              >
+                Eliminar
+              </button>
+            </li>
+          )) : (
+            <li className="p-4 text-center text-gray-500">No hay categorías para mostrar.</li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 };

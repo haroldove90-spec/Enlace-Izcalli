@@ -12,7 +12,7 @@ interface SimpleBarChartProps {
 }
 
 export const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, barColor = 'bg-blue-500', formatAsCurrency = false }) => {
-  const maxValue = Math.max(...data.map(item => item.value));
+  const maxValue = Math.max(1, ...data.map(item => item.value)); // Ensure maxValue is at least 1 to avoid division by zero
 
   const formatValue = (value: number) => {
     if (formatAsCurrency) {
@@ -20,22 +20,30 @@ export const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, barColor =
     }
     return value.toString();
   };
+  
+  // Ensure each bar has a minimum width to be legible, forcing horizontal scroll on small screens.
+  // 4rem (64px) per bar should be sufficient space.
+  const minChartWidth = data.length * 4;
+
 
   return (
-    <div className="w-full h-64 flex items-end justify-around space-x-2 pt-4">
+    <div 
+        className="h-64 flex items-end justify-around space-x-2 pt-4"
+        style={{ minWidth: `${minChartWidth}rem` }}
+    >
       {data.map((item, index) => (
-        <div key={index} className="flex-1 flex flex-col items-center h-full">
+        <div key={index} className="flex-1 flex flex-col items-center h-full text-center">
           <div 
             className="w-full flex items-end justify-center"
             style={{ height: 'calc(100% - 1.5rem)' }}
           >
             <div
-              className={`w-3/4 rounded-t-md ${barColor} hover:opacity-80 transition-opacity`}
+              className={`w-3/4 max-w-[50px] rounded-t-md ${barColor} hover:opacity-80 transition-opacity`}
               style={{ height: `${(item.value / maxValue) * 100}%` }}
-              title={`${formatAsCurrency ? '$' : ''}${item.value.toLocaleString()}`}
+              title={`${item.name}: ${formatAsCurrency ? '$' : ''}${item.value.toLocaleString()}`}
             ></div>
           </div>
-          <span className="text-xs font-medium text-gray-500 mt-2">{item.name}</span>
+          <span className="text-xs font-medium text-gray-500 mt-2 truncate w-full">{item.name}</span>
         </div>
       ))}
     </div>
