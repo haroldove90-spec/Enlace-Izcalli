@@ -1,6 +1,6 @@
 import React from 'react';
 import { Business } from '../types';
-import { PhoneIcon, WhatsAppIcon, WebsiteIcon, ShareIcon } from './Icons';
+import { PhoneIcon, WhatsAppIcon, WebsiteIcon, ShareIcon, MapPinIcon } from './Icons';
 
 interface BusinessCardProps {
   business: Business;
@@ -77,6 +77,9 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
           </a>
           <a href={business.website} target="_blank" rel="noopener noreferrer" title="Sitio Web" className="text-gray-600 hover:text-gray-900 transition-colors">
             <WebsiteIcon className="w-6 h-6" />
+          </a>
+           <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`} target="_blank" rel="noopener noreferrer" title="Ver en Mapa" className="text-gray-600 hover:text-red-600 transition-colors">
+            <MapPinIcon className="w-6 h-6" />
           </a>
           <button onClick={handleShare} title="Compartir" className="text-gray-600 hover:text-blue-500 transition-colors">
             <ShareIcon className="w-6 h-6" />

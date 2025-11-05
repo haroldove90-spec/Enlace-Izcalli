@@ -227,7 +227,7 @@ const App: React.FC = () => {
       case 'notifications':
         return <NotificationsPage />;
       case 'zones':
-        return <ZonesPage />;
+        return <ZonesPage businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
       case 'adminDashboard':
         return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} usingFallbackData={usingFallbackData} />;
       case 'adminAddBusiness':

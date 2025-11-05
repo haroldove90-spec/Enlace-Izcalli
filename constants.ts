@@ -1,5 +1,20 @@
 import { Category, Business } from './types';
 
+export interface Zone {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  zoom: number;
+}
+
+export const ZONES: Zone[] = [
+  { id: 1, name: 'Centro Urbano', latitude: 19.6503, longitude: -99.2155, zoom: 15 },
+  { id: 2, name: 'Tepalcapa', latitude: 19.6645, longitude: -99.2050, zoom: 16 },
+  { id: 3, name: 'Ensueños', latitude: 19.6580, longitude: -99.2235, zoom: 16 },
+  { id: 4, name: 'Santa Rosa de Lima', latitude: 19.6830, longitude: -99.2200, zoom: 15 },
+];
+
 export const CATEGORIES: Category[] = [
   { id: 1, name: 'Restaurantes y Comida' },
   { id: 2, name: 'Salud y Bienestar' },
@@ -34,6 +49,9 @@ export const BUSINESSES: Business[] = [
     ownerEmail: "carlos.perez@example.com",
     isActive: true,
     promotionEndDate: createEndDate(3),
+    address: "Av. Primero de Mayo, Centro Urbano, 54750 Cuautitlán Izcalli, Méx.",
+    latitude: 19.6508,
+    longitude: -99.2150,
   },
   {
     id: 2,
@@ -51,6 +69,9 @@ export const BUSINESSES: Business[] = [
     ownerEmail: "ana.gomez@example.com",
     isActive: true,
     promotionEndDate: createEndDate(6),
+    address: "C. de los Sueños 10, Ensueños, 54740 Cuautitlán Izcalli, Méx.",
+    latitude: 19.6585,
+    longitude: -99.2230,
   },
   {
     id: 3,
@@ -68,6 +89,9 @@ export const BUSINESSES: Business[] = [
     ownerEmail: "roberto.diaz@example.com",
     isActive: true,
     promotionEndDate: createEndDate(1),
+    address: "Plaza del Sol, Centro Urbano, 54700 Cuautitlán Izcalli, Méx.",
+    latitude: 19.6499,
+    longitude: -99.2165,
   },
   {
     id: 4,
@@ -85,6 +109,9 @@ export const BUSINESSES: Business[] = [
     ownerEmail: "sofia.martinez@example.com",
     isActive: true,
     promotionEndDate: createEndDate(12),
+    address: "Luna Parc, Av. 1o. de Mayo S/N, 54750 Cuautitlán Izcalli, Méx.",
+    latitude: 19.6521,
+    longitude: -99.2148,
   },
   {
     id: 5,
@@ -102,6 +129,9 @@ export const BUSINESSES: Business[] = [
     ownerEmail: "jorge.hernandez@example.com",
     isActive: false,
     promotionEndDate: new Date(new Date().setDate(new Date().getDate() - 10)).toISOString(), // Expired
+    address: "Av. Chalma, Tepalcapa, 54740 Cuautitlán Izcalli, Méx.",
+    latitude: 19.6650,
+    longitude: -99.2045,
   },
   {
     id: 6,
@@ -119,5 +149,8 @@ export const BUSINESSES: Business[] = [
     ownerEmail: "laura.torres@example.com",
     isActive: true,
     promotionEndDate: createEndDate(2),
+    address: "C. 20 de Noviembre, Santa Rosa de Lima, 54740 Cuautitlán Izcalli, Méx.",
+    latitude: 19.6835,
+    longitude: -99.2210,
   }
 ];

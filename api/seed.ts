@@ -39,7 +39,10 @@ export default async function handler(
         ownerName VARCHAR(255) NOT NULL,
         ownerEmail VARCHAR(255) NOT NULL,
         isActive BOOLEAN DEFAULT TRUE,
-        promotionEndDate TIMESTAMPTZ
+        promotionEndDate TIMESTAMPTZ,
+        address TEXT,
+        latitude FLOAT8,
+        longitude FLOAT8
       );
     `);
     
@@ -69,18 +72,18 @@ export default async function handler(
     // Batch insert businesses
     if (BUSINESSES.length > 0) {
       const businessPlaceholders = BUSINESSES.map((_, i) => {
-        const offset = i * 15;
-        return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15})`;
+        const offset = i * 18;
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16}, $${offset + 17}, $${offset + 18})`;
       }).join(',');
 
       const businessParams = BUSINESSES.flatMap(b => [
         b.id, b.name, b.description, b.logoUrl, b.phone, b.whatsapp, b.website, b.categoryId, 
         JSON.stringify(b.services), JSON.stringify(b.products), b.isFeatured, b.ownerName, 
-        b.ownerEmail, b.isActive, b.promotionEndDate
+        b.ownerEmail, b.isActive, b.promotionEndDate, b.address, b.latitude, b.longitude
       ]);
       
       await client.query(
-        `INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
+        `INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate, address, latitude, longitude)
          VALUES ${businessPlaceholders};`,
         businessParams
       );

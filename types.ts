@@ -19,4 +19,7 @@ export interface Business {
   ownerEmail:string;
   isActive: boolean;
   promotionEndDate: string; // ISO date string
+  address: string;
+  latitude: number;
+  longitude: number;
 }
