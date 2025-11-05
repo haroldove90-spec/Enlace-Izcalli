@@ -11,8 +11,8 @@ interface AddBusinessPageProps {
 
 export const AddBusinessPage: React.FC<AddBusinessPageProps> = ({ categories, onAddBusiness, setActiveView }) => {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Añadir Nuevo Negocio</h1>
+    <div className="bg-neutral-900 border border-neutral-800 rounded-lg shadow-lg p-8 animate-fade-in max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold text-white mb-6">Añadir Nuevo Negocio</h1>
       <BusinessForm 
         categories={categories} 
         onSubmit={onAddBusiness} 
