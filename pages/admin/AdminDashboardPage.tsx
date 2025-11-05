@@ -27,11 +27,21 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
     setSeedError(null);
     try {
       const response = await fetch('/api/seed');
-      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error(data.details || data.error || 'Failed to seed database');
+        let errorDetails = 'Ocurrió un error en el servidor.';
+        try {
+            const errorData = await response.json();
+            errorDetails = errorData.details || errorData.error || JSON.stringify(errorData);
+        } catch (jsonError) {
+            // If JSON parsing fails, it's not a JSON response, so get raw text.
+            errorDetails = await response.text();
+        }
+        throw new Error(errorDetails);
       }
-      setSeedMessage('¡Base de datos inicializada con éxito! La página se recargará.');
+
+      const data = await response.json();
+      setSeedMessage(data.message || '¡Base de datos inicializada con éxito! La página se recargará.');
       setTimeout(() => {
         window.location.reload();
       }, 2000);
