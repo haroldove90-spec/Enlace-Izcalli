@@ -22,7 +22,7 @@ export default async function handler(
       return response.status(400).json({ error: 'Subscription object is invalid.' });
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('subscriptions')
       .upsert(
         { 
