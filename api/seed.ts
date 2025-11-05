@@ -13,9 +13,10 @@ export default async function handler(
     // Wrap all operations in a single transaction for performance and atomicity
     await client.sql`BEGIN;`;
 
-    // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint
-    await client.sql`DROP TABLE IF EXISTS businesses;`;
-    await client.sql`DROP TABLE IF EXISTS categories;`;
+    // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint.
+    // Using CASCADE to handle any dependent objects gracefully.
+    await client.sql`DROP TABLE IF EXISTS businesses CASCADE;`;
+    await client.sql`DROP TABLE IF EXISTS categories CASCADE;`;
     console.log('Dropped existing tables for a clean seed.');
 
     // Create categories table
