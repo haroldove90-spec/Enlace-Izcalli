@@ -14,6 +14,7 @@ import { EditBusinessPage } from './pages/admin/EditBusinessPage';
 import { ManageBusinessesPage } from './pages/admin/ManageBusinessesPage';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { Business, Category } from './types';
+import { BUSINESSES, CATEGORIES } from './constants';
 
 export type View = 'home' | 'categories' | 'advertise' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
 export type UserRole = 'user' | 'admin';
@@ -69,10 +70,20 @@ const App: React.FC = () => {
       setCategories(finalCategories);
 
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-      // On any error, reset to empty arrays to prevent crashes
-      setBusinesses([]);
-      setCategories([]);
+      console.error("Failed to fetch data, falling back to local mock data:", error);
+      // Fallback to local data on API failure
+      let finalBusinesses = BUSINESSES;
+      const finalCategories = CATEGORIES;
+      const now = new Date();
+      finalBusinesses = finalBusinesses.map(b => {
+          if (b.isActive && new Date(b.promotionEndDate) < now) {
+              return { ...b, isActive: false };
+          }
+          return b;
+      });
+
+      setBusinesses(finalBusinesses);
+      setCategories(finalCategories);
     } finally {
       setIsLoading(false);
     }
