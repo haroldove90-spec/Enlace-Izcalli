@@ -80,6 +80,10 @@ export default async function handler(
     await client.query('COMMIT');
     console.log('Transaction committed successfully.');
 
+    // Notify PostgREST to reload schema cache to immediately recognize new tables
+    await client.query("NOTIFY pgrst, 'reload schema'");
+    console.log('Sent notification to reload Supabase schema cache.');
+
     return response.status(200).json({ message: 'Database seeded successfully! Your app should be working now.' });
   } catch (error) {
     console.error('Seeding error:', error);
