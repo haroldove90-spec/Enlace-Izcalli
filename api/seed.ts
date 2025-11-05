@@ -10,6 +10,9 @@ export default async function handler(
   try {
     await client.connect();
 
+    // Wrap all operations in a single transaction for performance and atomicity
+    await client.sql`BEGIN;`;
+
     // Drop tables first to ensure a clean slate, dropping businesses first due to foreign key constraint
     await client.sql`DROP TABLE IF EXISTS businesses;`;
     await client.sql`DROP TABLE IF EXISTS categories;`;
@@ -68,10 +71,16 @@ export default async function handler(
     await client.sql`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`;
     console.log(`${BUSINESSES.length} businesses seeded.`);
     
+    // Commit the transaction
+    await client.sql`COMMIT;`;
+    console.log('Transaction committed successfully.');
 
     return response.status(200).json({ message: 'Database seeded successfully! Your app should be working now.' });
   } catch (error) {
     console.error('Seeding error:', error);
+    // If an error occurs, roll back the transaction
+    await client.sql`ROLLBACK;`;
+    console.log('Transaction rolled back due to an error.');
     const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
     return response.status(500).json({ error: 'Failed to seed database', details: errorMessage });
   } finally {
