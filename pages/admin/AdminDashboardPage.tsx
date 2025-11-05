@@ -71,14 +71,14 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
       </div>
       
-      <div className="bg-orange-900 bg-opacity-20 border-l-4 border-orange-400 text-orange-200 p-4 mb-8 rounded-r-lg" role="alert">
+      <div className="bg-orange-50 border-l-4 border-orange-400 text-orange-700 p-4 mb-8 rounded-r-lg" role="alert">
         <p className="font-bold">
             {usingFallbackData ? "Atención: Se Requiere Inicialización" : "Inicialización de la Base de Datos"}
         </p>
-        <p className="text-sm text-orange-300">
+        <p className="text-sm">
             {usingFallbackData
                 ? "La aplicación no pudo conectar con la base de datos y está mostrando datos de prueba. Presiona el botón para crear las tablas y cargar los datos iniciales."
                 : "Si los datos no se cargan o ves errores, es posible que la base de datos necesite ser inicializada. Este proceso borrará los datos actuales y los reemplazará con datos de prueba."
@@ -87,15 +87,15 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
         <button
           onClick={handleSeedDatabase}
           disabled={isSeeding}
-          className="mt-3 bg-orange-500 text-white font-bold py-2 px-4 rounded hover:bg-orange-600 disabled:bg-orange-400 disabled:cursor-not-allowed transition-colors"
+          className="mt-3 bg-orange-500 text-white font-bold py-2 px-4 rounded hover:bg-orange-600 disabled:bg-orange-300 transition-colors"
         >
           {isSeeding ? 'Inicializando...' : 'Inicializar Base de Datos'}
         </button>
-        {seedMessage && <p className="mt-2 text-sm font-semibold text-green-400">{seedMessage}</p>}
+        {seedMessage && <p className="mt-2 text-sm font-semibold text-green-700">{seedMessage}</p>}
         {seedError && (
-             <div className="mt-3 bg-red-900 bg-opacity-20 border border-red-500 text-red-200 p-4 rounded-md text-sm" role="alert">
+             <div className="mt-3 bg-red-50 border border-red-200 text-red-900 p-4 rounded-md text-sm" role="alert">
                 <p className="font-bold">Ocurrió un error</p>
-                <pre className="whitespace-pre-wrap font-mono text-xs mt-2 p-2 bg-red-900 bg-opacity-30 rounded text-red-300">{seedError}</pre>
+                <pre className="whitespace-pre-wrap font-mono text-xs mt-2 p-2 bg-red-100 rounded text-red-800">{seedError}</pre>
             </div>
         )}
       </div>
@@ -106,8 +106,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
         <StatCard title="Total de Categorías" value={totalCategories.toString()} />
       </div>
 
-      <div className="bg-neutral-900 p-4 sm:p-6 rounded-lg border border-neutral-800">
-        <h2 className="text-xl font-bold text-gray-200 mb-4">Negocios por Categoría</h2>
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold text-gray-700 mb-4">Negocios por Categoría</h2>
         <div className="overflow-x-auto pb-2">
           <SimpleBarChart data={businessesPerCategory} barColor="bg-red-500" />
         </div>

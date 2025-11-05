@@ -16,8 +16,8 @@ export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, 
   };
 
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-lg shadow-lg p-8 animate-fade-in max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-white mb-6">Editar Negocio: {businessToEdit.name}</h1>
+    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Editar Negocio: {businessToEdit.name}</h1>
       <BusinessForm 
         categories={categories} 
         onSubmit={handleSubmit} 

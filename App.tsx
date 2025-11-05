@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
-import { AdminHeader } from './components/admin/AdminHeader';
 import { HomePage } from './pages/HomePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
@@ -106,15 +105,6 @@ const App: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
-  
-  useEffect(() => {
-    if (currentUserRole === 'admin') {
-        document.body.className = 'bg-black text-gray-300';
-    } else {
-        document.body.className = 'bg-gray-50';
-    }
-  }, [currentUserRole]);
-
 
   const handleInstallClick = () => {
     if (!deferredPrompt) return;
@@ -222,7 +212,7 @@ const App: React.FC = () => {
   
   const renderLoading = () => (
     <div className="flex justify-center items-center h-full">
-      <p className="text-lg text-gray-400">Cargando datos...</p>
+      <p className="text-lg text-gray-600">Cargando datos...</p>
     </div>
   );
 
@@ -247,32 +237,13 @@ const App: React.FC = () => {
        case 'adminClients':
         return <ClientsPage businesses={businesses} onEditBusiness={handleEditClick} />;
        case 'adminManageBusinesses':
-        return <ManageBusinessesPage businesses={businesses} onToggleStatus={handleToggleBusinessStatus} onEditBusiness={handleEditClick} setActiveView={handleViewChange}/>;
+        return <ManageBusinessesPage businesses={businesses} onToggleStatus={handleToggleBusinessStatus} onEditBusiness={handleEditClick} />;
       case 'adminEditBusiness':
         return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} /> : <p>No business selected for editing.</p>;
       default:
         return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
     }
   };
-
-  if (currentUserRole === 'admin') {
-    return (
-      <div className="flex flex-col min-h-screen bg-black">
-        <AdminHeader activeView={activeView} setActiveView={handleViewChange} setCurrentUserRole={setCurrentUserRole} />
-        {usingFallbackData && (
-          <div className="bg-red-500 text-white text-center p-2 text-sm font-semibold sticky top-0 z-50 md:relative">
-            <span>Error de conexión. Mostrando datos de ejemplo.</span>
-            <button onClick={() => handleViewChange('adminDashboard')} className="underline ml-2 font-bold hover:text-red-200">
-                Inicializar Base de Datos
-            </button>
-          </div>
-        )}
-        <main className="flex-grow p-4 md:p-8">
-          {renderContent()}
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="flex bg-gray-100 min-h-screen">
