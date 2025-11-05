@@ -1,17 +1,20 @@
-import { createClient } from '@vercel/postgres';
+import { createClient } from '@supabase/supabase-js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(
   request: VercelRequest,
   response: VercelResponse,
 ) {
-  const client = createClient();
-  try {
-    await client.connect();
+  const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+  );
 
+  try {
     if (request.method === 'GET') {
-      const { rows } = await client.sql`SELECT * FROM categories ORDER BY id;`;
-      return response.status(200).json(rows);
+      const { data, error } = await supabase.from('categories').select('*').order('id');
+      if (error) throw error;
+      return response.status(200).json(data);
     }
 
     else if (request.method === 'POST') {
@@ -19,14 +22,17 @@ export default async function handler(
       if (!name || typeof name !== 'string' || name.trim().length === 0) {
         return response.status(400).json({ error: 'El nombre de la categoría es requerido y no puede estar vacío.' });
       }
-      
       const trimmedName = name.trim();
-      const { rowCount } = await client.sql`SELECT 1 FROM categories WHERE LOWER(name) = LOWER(${trimmedName});`;
-      if (rowCount > 0) {
+      
+      const { data: existing, error: selectError } = await supabase.from('categories').select('id').ilike('name', trimmedName).limit(1);
+      if (selectError) throw selectError;
+      if (existing && existing.length > 0) {
         return response.status(409).json({ error: `La categoría '${trimmedName}' ya existe.` });
       }
 
-      await client.sql`INSERT INTO categories (name) VALUES (${trimmedName});`;
+      const { error: insertError } = await supabase.from('categories').insert({ name: trimmedName });
+      if (insertError) throw insertError;
+
       return response.status(201).json({ success: true, message: 'Categoría añadida exitosamente.' });
     }
 
@@ -36,12 +42,16 @@ export default async function handler(
             return response.status(400).json({ error: 'Category ID is required' });
         }
         
-        const { rowCount } = await client.sql`SELECT 1 FROM businesses WHERE categoryId = ${id};`;
-        if (rowCount > 0) {
+        const { count, error: countError } = await supabase.from('businesses').select('id', { count: 'exact', head: true }).eq('categoryId', id);
+        if (countError) throw countError;
+
+        if (count && count > 0) {
           return response.status(409).json({ error: 'No se puede eliminar la categoría porque está siendo utilizada por uno o más negocios.' });
         }
 
-        await client.sql`DELETE FROM categories WHERE id = ${id};`;
+        const { error: deleteError } = await supabase.from('categories').delete().eq('id', id);
+        if (deleteError) throw deleteError;
+
         return response.status(200).json({ message: 'Category deleted successfully' });
     }
     
@@ -49,16 +59,9 @@ export default async function handler(
       response.setHeader('Allow', ['GET', 'POST', 'DELETE']);
       return response.status(405).end(`Method ${request.method} Not Allowed`);
     }
-  } catch (error) {
+  } catch (error: any) {
      console.error('API Error in categories.ts:', error);
-     let errorMessage = 'Ocurrió un error inesperado en el servidor.';
-     if (error instanceof Error) {
-       errorMessage = error.message;
-     } else if (typeof error === 'string') {
-       errorMessage = error;
-     }
+     const errorMessage = error.message || 'Ocurrió un error inesperado en el servidor.';
      return response.status(500).json({ error: errorMessage });
-  } finally {
-      await client.end();
   }
 }
