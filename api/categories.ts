@@ -1,19 +1,13 @@
-import { createClient } from '@vercel/postgres';
+import { sql } from '@vercel/postgres';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const client = createClient({
-      connectionString: process.env.POSTGRES_URL,
-  });
-
   try {
-    await client.connect();
-
     if (request.method === 'GET') {
-      const { rows } = await client.query('SELECT * FROM categories ORDER BY id;');
+      const { rows } = await sql`SELECT * FROM categories ORDER BY id;`;
       return response.status(200).json(rows);
     }
 
@@ -24,12 +18,12 @@ export default async function handler(
       }
       
       const trimmedName = name.trim();
-      const { rowCount } = await client.query('SELECT 1 FROM categories WHERE LOWER(name) = LOWER($1);', [trimmedName]);
+      const { rowCount } = await sql`SELECT 1 FROM categories WHERE LOWER(name) = LOWER(${trimmedName});`;
       if (rowCount > 0) {
         return response.status(409).json({ error: `La categoría '${trimmedName}' ya existe.` });
       }
 
-      await client.query('INSERT INTO categories (name) VALUES ($1);', [trimmedName]);
+      await sql`INSERT INTO categories (name) VALUES (${trimmedName});`;
       return response.status(201).json({ success: true, message: 'Categoría añadida exitosamente.' });
     }
 
@@ -39,12 +33,12 @@ export default async function handler(
             return response.status(400).json({ error: 'Category ID is required' });
         }
         
-        const { rowCount } = await client.query('SELECT 1 FROM businesses WHERE categoryId = $1;', [id]);
+        const { rowCount } = await sql`SELECT 1 FROM businesses WHERE categoryId = ${id};`;
         if (rowCount > 0) {
           return response.status(409).json({ error: 'No se puede eliminar la categoría porque está siendo utilizada por uno o más negocios.' });
         }
 
-        await client.query('DELETE FROM categories WHERE id = $1;', [id]);
+        await sql`DELETE FROM categories WHERE id = ${id};`;
         return response.status(200).json({ message: 'Category deleted successfully' });
     }
     
@@ -61,7 +55,5 @@ export default async function handler(
        errorMessage = error;
      }
      return response.status(500).json({ error: errorMessage });
-  } finally {
-    await client.end();
   }
 }
