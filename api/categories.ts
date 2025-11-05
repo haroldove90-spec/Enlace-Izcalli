@@ -1,20 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+import { Pool } from 'pg';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+});
 
 export default async function handler(
   request: VercelRequest,
   response: VercelResponse,
 ) {
-  const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!
-  );
-
   try {
     if (request.method === 'GET') {
-      const { data, error } = await supabase.from('categories').select('*').order('id');
-      if (error) throw error;
-      return response.status(200).json(data);
+      const { rows } = await pool.query('SELECT * FROM categories ORDER BY id;');
+      return response.status(200).json(rows);
     }
 
     else if (request.method === 'POST') {
@@ -24,15 +22,12 @@ export default async function handler(
       }
       const trimmedName = name.trim();
       
-      const { data: existing, error: selectError } = await supabase.from('categories').select('id').ilike('name', trimmedName).limit(1);
-      if (selectError) throw selectError;
-      if (existing && existing.length > 0) {
+      const { rows: existing } = await pool.query('SELECT id FROM categories WHERE name ILIKE $1 LIMIT 1', [trimmedName]);
+      if (existing.length > 0) {
         return response.status(409).json({ error: `La categoría '${trimmedName}' ya existe.` });
       }
 
-      const { error: insertError } = await supabase.from('categories').insert({ name: trimmedName });
-      if (insertError) throw insertError;
-
+      await pool.query('INSERT INTO categories (name) VALUES ($1)', [trimmedName]);
       return response.status(201).json({ success: true, message: 'Categoría añadida exitosamente.' });
     }
 
@@ -42,16 +37,14 @@ export default async function handler(
             return response.status(400).json({ error: 'Category ID is required' });
         }
         
-        const { count, error: countError } = await supabase.from('businesses').select('id', { count: 'exact', head: true }).eq('categoryId', id);
-        if (countError) throw countError;
+        const { rows } = await pool.query('SELECT COUNT(*) AS count FROM businesses WHERE "categoryId" = $1', [id]);
+        const count = parseInt(rows[0].count, 10);
 
-        if (count && count > 0) {
+        if (count > 0) {
           return response.status(409).json({ error: 'No se puede eliminar la categoría porque está siendo utilizada por uno o más negocios.' });
         }
 
-        const { error: deleteError } = await supabase.from('categories').delete().eq('id', id);
-        if (deleteError) throw deleteError;
-
+        await pool.query('DELETE FROM categories WHERE id = $1', [id]);
         return response.status(200).json({ message: 'Category deleted successfully' });
     }
     

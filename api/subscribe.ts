@@ -1,5 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { Pool } from 'pg';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+});
 
 export default async function handler(
   request: VercelRequest,
@@ -9,11 +13,6 @@ export default async function handler(
     response.setHeader('Allow', ['POST']);
     return response.status(405).end(`Method ${request.method} Not Allowed`);
   }
-
-  const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!
-  );
   
   try {
     const subscription = request.body;
@@ -22,20 +21,15 @@ export default async function handler(
       return response.status(400).json({ error: 'Subscription object is invalid.' });
     }
 
-    const { error } = await supabase
-      .from('subscriptions')
-      .upsert(
-        { 
-          endpoint: subscription.endpoint, 
-          subscription_data: subscription 
-        },
-        { onConflict: 'endpoint' }
-      );
-
-    if (error) {
-      console.error('Supabase error saving subscription:', error);
-      throw error;
-    }
+    const query = `
+      INSERT INTO subscriptions (endpoint, subscription_data)
+      VALUES ($1, $2)
+      ON CONFLICT (endpoint)
+      DO UPDATE SET subscription_data = EXCLUDED.subscription_data;
+    `;
+    const values = [subscription.endpoint, subscription];
+    
+    await pool.query(query, values);
 
     return response.status(201).json({ message: 'Subscription saved successfully.' });
 

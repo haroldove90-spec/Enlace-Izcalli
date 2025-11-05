@@ -1,5 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { Pool } from 'pg';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+});
 
 export default async function handler(
   request: VercelRequest,
@@ -9,11 +13,6 @@ export default async function handler(
     response.setHeader('Allow', ['POST']);
     return response.status(405).end(`Method ${request.method} Not Allowed`);
   }
-
-  const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!
-  );
   
   try {
     const { endpoint } = request.body;
@@ -22,15 +21,7 @@ export default async function handler(
       return response.status(400).json({ error: 'Endpoint is required to unsubscribe.' });
     }
 
-    const { error } = await supabase
-      .from('subscriptions')
-      .delete()
-      .eq('endpoint', endpoint);
-
-    if (error) {
-      console.error('Supabase error removing subscription:', error);
-      throw error;
-    }
+    await pool.query('DELETE FROM subscriptions WHERE endpoint = $1', [endpoint]);
 
     return response.status(200).json({ message: 'Subscription removed successfully.' });
 
