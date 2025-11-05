@@ -2,15 +2,19 @@ import { Pool } from 'pg';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { CATEGORIES, BUSINESSES } from '../constants';
 
+// Use a connection pool for better connection management in serverless environments.
+// Moved outside handler to be reused across invocations.
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
 export default async function handler(
   _request: VercelRequest,
   response: VercelResponse,
 ) {
-  // Use a connection pool for better connection management in serverless environments.
-  const pool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
-  });
-  
   const client = await pool.connect();
 
   try {
