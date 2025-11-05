@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-// Fix: Explicitly import with .tsx extension to resolve module error.
-import App from './App.tsx';
+import App from './App';
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
