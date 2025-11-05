@@ -64,28 +64,39 @@ export default async function handler(
     `);
     console.log('Subscriptions table created.');
 
-    // Insert categories
-    console.log('Seeding categories...');
-    for (const cat of CATEGORIES) {
-      await client.query('INSERT INTO categories (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING;', [cat.id, cat.name]);
+    // Batch insert categories
+    if (CATEGORIES.length > 0) {
+      console.log('Seeding categories...');
+      const categoryValues = CATEGORIES.map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2})`).join(',');
+      const categoryParams = CATEGORIES.flatMap(cat => [cat.id, cat.name]);
+      await client.query(`INSERT INTO categories (id, name) VALUES ${categoryValues} ON CONFLICT (id) DO NOTHING;`, categoryParams);
+      await client.query(`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`);
+      console.log(`${CATEGORIES.length} categories seeded.`);
     }
-    // After manually inserting with specific IDs, reset the sequence for future inserts
-    await client.query(`SELECT setval('categories_id_seq', (SELECT MAX(id) FROM categories));`);
-    console.log(`${CATEGORIES.length} categories seeded.`);
 
-    // Insert businesses
-    console.log('Seeding businesses...');
-    for (const b of BUSINESSES) {
+    // Batch insert businesses
+    if (BUSINESSES.length > 0) {
+      console.log('Seeding businesses...');
+      const businessPlaceholders = BUSINESSES.map((_, i) => {
+        const offset = i * 15;
+        return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12}, $${offset + 13}, $${offset + 14}, $${offset + 15})`;
+      }).join(',');
+
+      const businessParams = BUSINESSES.flatMap(b => [
+        b.id, b.name, b.description, b.logoUrl, b.phone, b.whatsapp, b.website, b.categoryId, 
+        JSON.stringify(b.services), JSON.stringify(b.products), b.isFeatured, b.ownerName, 
+        b.ownerEmail, b.isActive, b.promotionEndDate
+      ]);
+      
       await client.query(
         `INSERT INTO businesses (id, name, description, logoUrl, phone, whatsapp, website, categoryId, services, products, isFeatured, ownerName, ownerEmail, isActive, promotionEndDate)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+         VALUES ${businessPlaceholders}
          ON CONFLICT (id) DO NOTHING;`,
-        [b.id, b.name, b.description, b.logoUrl, b.phone, b.whatsapp, b.website, b.categoryId, JSON.stringify(b.services), JSON.stringify(b.products), b.isFeatured, b.ownerName, b.ownerEmail, b.isActive, b.promotionEndDate]
+        businessParams
       );
+      await client.query(`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`);
+      console.log(`${BUSINESSES.length} businesses seeded.`);
     }
-    // After manually inserting with specific IDs, reset the sequence for future inserts
-    await client.query(`SELECT setval('businesses_id_seq', (SELECT MAX(id) FROM businesses));`);
-    console.log(`${BUSINESSES.length} businesses seeded.`);
     
     // Commit the transaction
     await client.query('COMMIT');
