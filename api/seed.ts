@@ -3,7 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { CATEGORIES, BUSINESSES } from '../constants';
 
 export default async function handler(
-  request: VercelRequest,
+  _request: VercelRequest,
   response: VercelResponse,
 ) {
   const client = new Client({

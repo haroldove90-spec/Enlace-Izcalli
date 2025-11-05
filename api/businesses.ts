@@ -22,7 +22,7 @@ export default async function handler(
       if (!name || !ownerName || !ownerEmail) {
          return response.status(400).json({ error: 'Name, owner name, and email are required' });
       }
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('businesses')
         .insert({ name, ownerName, ownerEmail, ...rest })
         .select();
