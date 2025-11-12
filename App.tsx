@@ -13,12 +13,9 @@ import { ClientsPage } from './pages/admin/ClientsPage';
 import { EditBusinessPage } from './pages/admin/EditBusinessPage';
 import { ManageBusinessesPage } from './pages/admin/ManageBusinessesPage';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
-import { Business, Category } from './types';
+import { Business, Category, View, UserRole } from './types';
 import { BUSINESSES, CATEGORIES } from './constants';
 import { supabase } from './supabaseClient';
-
-export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
-export type UserRole = 'user' | 'admin';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -223,7 +220,7 @@ const App: React.FC = () => {
        case 'adminManageBusinesses':
         return <ManageBusinessesPage businesses={businesses} onToggleStatus={handleToggleBusinessStatus} onEditBusiness={handleEditClick} />;
       case 'adminEditBusiness':
-        return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} /> : <p>No business selected for editing.</p>;
+        return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} setActiveView={handleViewChange} /> : <p>No business selected for editing.</p>;
       default:
         return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
     }

@@ -1,15 +1,16 @@
 import React from 'react';
 import { BusinessForm } from '../../components/admin/BusinessForm';
-import { Category, Business } from '../../types';
+import { Category, Business, View } from '../../types';
 
 interface EditBusinessPageProps {
   categories: Category[];
   businessToEdit: Business;
   onUpdateBusiness: (business: Business) => void;
   onCancel: () => void;
+  setActiveView: (view: View) => void;
 }
 
-export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, businessToEdit, onUpdateBusiness, onCancel }) => {
+export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, businessToEdit, onUpdateBusiness, onCancel, setActiveView }) => {
 
   const handleSubmit = (businessData: Omit<Business, 'id'> | Business) => {
     onUpdateBusiness(businessData as Business);
@@ -23,6 +24,7 @@ export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, 
         onSubmit={handleSubmit} 
         onCancel={onCancel}
         initialData={businessToEdit}
+        setActiveView={setActiveView}
       />
     </div>
   );

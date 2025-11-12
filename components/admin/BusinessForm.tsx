@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Business, Category } from '../../types';
+import { Business, Category, View } from '../../types';
 
 interface BusinessFormProps {
   categories: Category[];
   onSubmit: (business: Omit<Business, 'id'> | Business) => void;
   initialData?: Business;
   onCancel: () => void;
+  setActiveView: (view: View) => void;
 }
 
 // Helper components for form fields with updated styling
@@ -40,7 +41,7 @@ const promotionDurations = [
     { id: '12', name: '12 Meses' },
 ];
 
-export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit, initialData, onCancel }) => {
+export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit, initialData, onCancel, setActiveView }) => {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -112,7 +113,25 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <InputField name="name" label="Nombre del Negocio" value={formData.name} onChange={handleChange} required />
-        <SelectField name="categoryId" label="Categoría" value={formData.categoryId} onChange={handleChange} options={categories} required />
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">Categoría</label>
+            <button
+                type="button"
+                onClick={() => setActiveView('adminManageCategories')}
+                className="text-sm font-medium text-red-600 hover:text-red-800"
+            >
+                Gestionar
+            </button>
+          </div>
+          <select id="categoryId" name="categoryId" value={formData.categoryId} onChange={handleChange} required className="block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-black rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+            {categories.length > 0 ? (
+              categories.map((opt) => <option key={opt.id} value={opt.id}>{opt.name}</option>)
+            ) : (
+              <option value="" disabled>Primero crea una categoría</option>
+            )}
+          </select>
+        </div>
       </div>
       <TextAreaField name="description" label="Descripción" value={formData.description} onChange={handleChange} required />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

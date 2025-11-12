@@ -23,3 +23,6 @@ export interface Business {
   latitude: number;
   longitude: number;
 }
+
+export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
+export type UserRole = 'user' | 'admin';

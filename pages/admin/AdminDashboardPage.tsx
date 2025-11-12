@@ -2,7 +2,7 @@ import React from 'react';
 import { StatCard } from '../../components/admin/StatCard';
 import { SimpleBarChart } from '../../components/admin/SimpleBarChart';
 import { Business, Category } from '../../types';
-import { View } from '../../App';
+import { View } from '../../types';
 
 interface AdminDashboardPageProps {
   businesses: Business[];

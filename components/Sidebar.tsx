@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
-import { View, UserRole } from '../App';
+import { View, UserRole } from '../types';
 
 interface SidebarProps {
   activeView: View;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BusinessForm } from '../../components/admin/BusinessForm';
 import { Category, Business } from '../../types';
-import { View } from '../../App';
+import { View } from '../../types';
 
 interface AddBusinessPageProps {
   categories: Category[];
@@ -17,6 +17,7 @@ export const AddBusinessPage: React.FC<AddBusinessPageProps> = ({ categories, on
         categories={categories} 
         onSubmit={onAddBusiness} 
         onCancel={() => setActiveView('adminDashboard')} 
+        setActiveView={setActiveView}
       />
     </div>
   );
