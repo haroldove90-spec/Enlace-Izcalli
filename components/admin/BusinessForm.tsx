@@ -98,8 +98,6 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
     whatsapp: initialData?.whatsapp || '',
     website: initialData?.website || '',
     categoryId: initialData?.categoryId || categories[0]?.id || 0,
-    services: initialData?.services || [],
-    products: initialData?.products || [],
     isFeatured: initialData?.isFeatured || false,
     ownerName: initialData?.ownerName || '',
     ownerEmail: initialData?.ownerEmail || '',
@@ -110,6 +108,8 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
     googleMapsUrl: initialData?.googleMapsUrl || '',
   });
 
+  const [servicesInput, setServicesInput] = useState(initialData?.services?.join(', ') || '');
+  const [productsInput, setProductsInput] = useState(initialData?.products?.join(', ') || '');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.logoUrl || null);
@@ -173,17 +173,20 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
     }
   };
   
-  const handleArrayChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'services' | 'products') => {
-      setFormData(prev => ({ ...prev, [field]: e.target.value.split(',').map(item => item.trim()) }));
-  }
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const processedData = {
+      ...formData,
+      services: servicesInput.split(',').map(s => s.trim()).filter(Boolean),
+      products: productsInput.split(',').map(p => p.trim()).filter(Boolean),
+    };
+
     if(initialData) {
-        const { promotionDuration, ...dataToSubmit } = formData;
+        const { promotionDuration, ...dataToSubmit } = processedData;
         onSubmit({ ...initialData, ...dataToSubmit });
     } else {
-        const { promotionDuration, ...restOfForm } = formData;
+        const { promotionDuration, ...restOfForm } = processedData;
         const promotionMonths = parseInt(promotionDuration, 10);
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + promotionMonths);
@@ -266,8 +269,8 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({ categories, onSubmit
           <InputField name="latitude" label="Latitud" type="number" step="any" value={formData.latitude} onChange={handleChange} required />
           <InputField name="longitude" label="Longitud" type="number" step="any" value={formData.longitude} onChange={handleChange} required />
       </div>
-      <InputField name="services" label="Servicios (separados por coma)" value={formData.services.join(', ')} onChange={(e) => handleArrayChange(e, 'services')} />
-      <InputField name="products" label="Productos (separados por coma)" value={formData.products.join(', ')} onChange={(e) => handleArrayChange(e, 'products')} />
+      <InputField name="services" label="Servicios (separados por coma)" value={servicesInput} onChange={(e) => setServicesInput(e.target.value)} />
+      <InputField name="products" label="Productos (separados por coma)" value={productsInput} onChange={(e) => setProductsInput(e.target.value)} />
       
       {!initialData && (
         <SelectField name="promotionDuration" label="Duración de la Promoción" value={formData.promotionDuration} onChange={handleChange} options={promotionDurations} required />

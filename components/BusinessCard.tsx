@@ -18,7 +18,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
     const shareData = {
       title: business.name,
       text: `${business.description} - ¡Encuéntralo en Enlace Izcalli!`,
-      url: window.location.href, // Could be a specific URL for the business if available
+      url: window.location.href,
     };
     try {
       if (navigator.share) {
@@ -31,9 +31,26 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
     }
   };
 
-  const mapLink = business.googleMapsUrl && business.googleMapsUrl.startsWith('http')
-    ? business.googleMapsUrl
-    : `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`;
+  const formatWebsiteUrl = (url: string): string => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+    return `https://${url}`;
+  };
+  
+  const getMapLink = (): string | null => {
+    if (business.googleMapsUrl && business.googleMapsUrl.startsWith('http')) {
+        return business.googleMapsUrl;
+    }
+    if (business.latitude !== 0 || business.longitude !== 0) {
+        return `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`;
+    }
+    return null;
+  };
+
+  const websiteUrl = formatWebsiteUrl(business.website);
+  const mapLink = getMapLink();
   
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full transform hover:scale-105 transition-transform duration-300">
@@ -73,18 +90,26 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
       
       <div className="bg-gray-50 p-4 mt-auto border-t border-gray-200">
         <div className="flex justify-around items-center">
-          <a href={`tel:${business.phone}`} title="Llamar" className="text-gray-600 hover:text-red-600 transition-colors">
-            <PhoneIcon className="w-6 h-6" />
-          </a>
-          <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" className="text-gray-600 hover:text-green-500 transition-colors">
-            <WhatsAppIcon className="w-6 h-6" />
-          </a>
-          <a href={business.website} target="_blank" rel="noopener noreferrer" title="Sitio Web" className="text-gray-600 hover:text-gray-900 transition-colors">
-            <WebsiteIcon className="w-6 h-6" />
-          </a>
-           <a href={mapLink} target="_blank" rel="noopener noreferrer" title="Ver en Mapa" className="text-gray-600 hover:text-red-600 transition-colors">
-            <MapPinIcon className="w-6 h-6" />
-          </a>
+          {business.phone && (
+            <a href={`tel:${business.phone}`} title="Llamar" className="text-gray-600 hover:text-red-600 transition-colors">
+              <PhoneIcon className="w-6 h-6" />
+            </a>
+          )}
+          {business.whatsapp && (
+            <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" className="text-gray-600 hover:text-green-500 transition-colors">
+              <WhatsAppIcon className="w-6 h-6" />
+            </a>
+          )}
+          {websiteUrl && (
+            <a href={websiteUrl} target="_blank" rel="noopener noreferrer" title="Sitio Web" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <WebsiteIcon className="w-6 h-6" />
+            </a>
+          )}
+          {mapLink && (
+            <a href={mapLink} target="_blank" rel="noopener noreferrer" title="Ver en Mapa" className="text-gray-600 hover:text-red-600 transition-colors">
+              <MapPinIcon className="w-6 h-6" />
+            </a>
+          )}
           <button onClick={handleShare} title="Compartir" className="text-gray-600 hover:text-blue-500 transition-colors">
             <ShareIcon className="w-6 h-6" />
           </button>
