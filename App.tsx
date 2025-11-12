@@ -213,7 +213,7 @@ const App: React.FC = () => {
       case 'zones':
         return <ZonesPage businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
       case 'adminDashboard':
-        return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} usingFallbackData={usingFallbackData} />;
+        return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} />;
       case 'adminAddBusiness':
         return <AddBusinessPage categories={categories} onAddBusiness={handleAddBusiness} setActiveView={handleViewChange} />;
       case 'adminManageCategories':
@@ -236,9 +236,6 @@ const App: React.FC = () => {
         {usingFallbackData && (
             <div className="bg-red-500 text-white text-center p-2 text-sm font-semibold sticky top-0 z-50 md:relative">
               <span>Error de conexión con Supabase. Mostrando datos de ejemplo.</span>
-              <button onClick={() => handleViewChange('adminDashboard')} className="underline ml-2 font-bold hover:text-red-200">
-                  Inicializar Base de Datos
-              </button>
             </div>
         )}
         <Header />
