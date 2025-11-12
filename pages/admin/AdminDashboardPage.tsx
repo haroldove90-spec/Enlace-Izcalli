@@ -3,6 +3,9 @@ import { StatCard } from '../../components/admin/StatCard';
 import { SimpleBarChart } from '../../components/admin/SimpleBarChart';
 import { Business, Category } from '../../types';
 import { View } from '../../App';
+import { supabase } from '../../supabaseClient';
+import { BUSINESSES, CATEGORIES } from '../../constants';
+
 
 interface AdminDashboardPageProps {
   businesses: Business[];
@@ -20,43 +23,40 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
   const [seedError, setSeedError] = useState<string | null>(null);
 
   const handleSeedDatabase = useCallback(async () => {
-    if (!window.confirm('¿Estás seguro de que quieres reiniciar la base de datos? Se borrarán todos los datos actuales.')) {
+    if (!window.confirm('¿Estás seguro de que quieres reiniciar la base de datos? Se borrarán todos los datos actuales y se reemplazarán con los datos de ejemplo.')) {
       return;
     }
     setIsSeeding(true);
     setSeedMessage(null);
     setSeedError(null);
     try {
-      const response = await fetch('/api/seed');
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorDetails = errorText;
-        try {
-            // Attempt to parse the text as JSON for a more structured error message.
-            const errorData = JSON.parse(errorText);
-            errorDetails = errorData.details || errorData.error || JSON.stringify(errorData);
-        } catch (jsonError) {
-            // If parsing fails, it's not a JSON response; use the raw text.
-        }
-        throw new Error(errorDetails);
-      }
+      // 1. Delete existing data in reverse order of dependencies
+      // This is a destructive operation. RLS must be disabled or have permissive policies.
+      const { error: deleteBusinessesError } = await supabase.from('businesses').delete().neq('id', 0);
+      if (deleteBusinessesError) throw deleteBusinessesError;
 
-      const data = await response.json();
-      setSeedMessage(data.message || '¡Base de datos inicializada con éxito! La página se recargará.');
+      const { error: deleteCategoriesError } = await supabase.from('categories').delete().neq('id', 0);
+      if (deleteCategoriesError) throw deleteCategoriesError;
+
+      // 2. Insert new data from constants
+      const { error: insertCategoriesError } = await supabase.from('categories').insert(CATEGORIES);
+      if (insertCategoriesError) throw insertCategoriesError;
+
+      const { error: insertBusinessesError } = await supabase.from('businesses').insert(BUSINESSES);
+      if (insertBusinessesError) throw insertBusinessesError;
+
+
+      setSeedMessage('¡Base de datos inicializada con éxito! La página se recargará.');
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      const rawMessage = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
+      const rawMessage = error instanceof Error ? error.message : JSON.stringify(error);
       console.error("Database seed error:", rawMessage); // Log for debugging
 
       let friendlyMessage = 'No se pudo inicializar la base de datos. ';
-      if (rawMessage.includes('FUNCTION_INVOCATION_FAILED')) {
-        friendlyMessage += 'La función del servidor falló. Esto puede ser un problema temporal de la plataforma. Por favor, inténtelo de nuevo más tarde.';
-      } else {
-        friendlyMessage += 'Ocurrió un error en el servidor. Si el problema persiste, contacte a soporte.';
-      }
+      friendlyMessage += 'Asegúrate de que las tablas (businesses, categories) existen en Supabase y de que las políticas de seguridad (RLS) permiten la inserción y eliminación.';
+      
       setSeedError(`${friendlyMessage}\n\nDetalles técnicos:\n${rawMessage}`);
     } finally {
       setIsSeeding(false);
@@ -80,7 +80,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ business
         </p>
         <p className="text-sm">
             {usingFallbackData
-                ? "La aplicación no pudo conectar con la base de datos y está mostrando datos de prueba. Presiona el botón para crear las tablas y cargar los datos iniciales."
+                ? "La aplicación no pudo conectar con Supabase y está mostrando datos de prueba. Presiona el botón para crear las tablas y cargar los datos iniciales."
                 : "Si los datos no se cargan o ves errores, es posible que la base de datos necesite ser inicializada. Este proceso borrará los datos actuales y los reemplazará con datos de prueba."
             }
         </p>

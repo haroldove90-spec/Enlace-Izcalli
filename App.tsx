@@ -15,6 +15,7 @@ import { ManageBusinessesPage } from './pages/admin/ManageBusinessesPage';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { Business, Category } from './types';
 import { BUSINESSES, CATEGORIES } from './constants';
+import { supabase } from './supabaseClient';
 
 export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
 export type UserRole = 'user' | 'admin';
@@ -39,28 +40,20 @@ const App: React.FC = () => {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [businessesRes, categoriesRes] = await Promise.all([
-        fetch('/api/businesses'),
-        fetch('/api/categories')
-      ]);
-
-      if (!businessesRes.ok || !categoriesRes.ok) {
-        throw new Error(`API request failed: businesses status ${businessesRes.status}, categories status ${categoriesRes.status}`);
-      }
-
-      const businessesData = await businessesRes.json();
-      const categoriesData = await categoriesRes.json();
+      const { data: businessesData, error: businessesError } = await supabase.from('businesses').select('*').order('id');
+      const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*').order('id');
+      
+      if (businessesError) throw businessesError;
+      if (categoriesError) throw categoriesError;
 
       let finalBusinesses = Array.isArray(businessesData) ? businessesData : [];
       const finalCategories = Array.isArray(categoriesData) ? categoriesData : [];
       
-      // Process expirations right after fetching to avoid re-renders
+      // Process expirations right after fetching
       if (finalBusinesses.length > 0) {
           const now = new Date();
           finalBusinesses = finalBusinesses.map(b => {
               if (b.isActive && new Date(b.promotionEndDate) < now) {
-                  // This is a UI-only change for immediate feedback
-                  // A backend process should ideally handle this state change permanently
                   return { ...b, isActive: false };
               }
               return b;
@@ -72,7 +65,7 @@ const App: React.FC = () => {
       setUsingFallbackData(false);
 
     } catch (error) {
-      console.error("Failed to fetch data, falling back to local mock data:", error);
+      console.error("Failed to fetch data from Supabase, falling back to local mock data:", error);
       setUsingFallbackData(true);
       // Fallback to local data on API failure
       let finalBusinesses = BUSINESSES;
@@ -132,13 +125,10 @@ const App: React.FC = () => {
 
   const handleUpdateBusiness = async (updatedBusiness: Business) => {
     try {
-      const response = await fetch(`/api/businesses`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedBusiness),
-      });
-      if (!response.ok) throw new Error('Failed to update business');
-      await fetchData(); // Refetch all data
+      const { error } = await supabase.from('businesses').update(updatedBusiness).eq('id', updatedBusiness.id);
+      if (error) throw error;
+
+      await fetchData();
       setEditingBusiness(null);
       setActiveView('adminClients');
       alert('Negocio actualizado con éxito!');
@@ -150,13 +140,10 @@ const App: React.FC = () => {
 
   const handleAddBusiness = async (newBusiness: Omit<Business, 'id'>) => {
      try {
-      const response = await fetch('/api/businesses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newBusiness),
-      });
-      if (!response.ok) throw new Error('Failed to add business');
-      await fetchData(); // Refetch all data
+      const { error } = await supabase.from('businesses').insert([newBusiness]);
+      if (error) throw error;
+      
+      await fetchData();
       alert('Negocio añadido con éxito!');
       setActiveView('adminDashboard');
     } catch (error) {
@@ -192,12 +179,9 @@ const App: React.FC = () => {
       }
       
       try {
-        const response = await fetch('/api/businesses', {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ ...business, isActive: newStatus, promotionEndDate: newEndDate })
-        });
-        if (!response.ok) throw new Error('Failed to toggle status');
+        const { error } = await supabase.from('businesses').update({ isActive: newStatus, promotionEndDate: newEndDate }).eq('id', business.id);
+        if (error) throw error;
+
         await fetchData();
         if(newStatus) alert(`Negocio reactivado hasta ${new Date(newEndDate).toLocaleDateString()}.`);
       } catch (error) {
@@ -251,7 +235,7 @@ const App: React.FC = () => {
       <div className="flex-1 flex flex-col md:ml-64 overflow-x-hidden">
         {usingFallbackData && (
             <div className="bg-red-500 text-white text-center p-2 text-sm font-semibold sticky top-0 z-50 md:relative">
-              <span>Error de conexión. Mostrando datos de ejemplo.</span>
+              <span>Error de conexión con Supabase. Mostrando datos de ejemplo.</span>
               <button onClick={() => handleViewChange('adminDashboard')} className="underline ml-2 font-bold hover:text-red-200">
                   Inicializar Base de Datos
               </button>

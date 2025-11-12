@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Category } from '../../types';
+import { supabase } from '../../supabaseClient';
 
 interface ManageCategoriesPageProps {
   categories: Category[];
@@ -10,36 +11,21 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const getErrorMessage = async (response: Response, defaultMessage: string): Promise<string> => {
-      const errorText = await response.text();
-      try {
-          // Attempt to parse the text as a JSON object
-          const errorData = JSON.parse(errorText);
-          return errorData.error || JSON.stringify(errorData);
-      } catch (e) {
-          // If JSON parsing fails, it's not a JSON response. Return the raw text.
-          return errorText || defaultMessage;
-      }
-  };
-
-
   const handleAddCategory = async () => {
     if (newCategoryName.trim() && !isSubmitting) {
       setIsSubmitting(true);
       try {
-        const response = await fetch('/api/categories', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: newCategoryName.trim() }),
-        });
+        const { error } = await supabase.from('categories').insert([{ name: newCategoryName.trim() }]);
         
-        if (!response.ok) {
-          const errorMessage = await getErrorMessage(response, 'No se pudo añadir la categoría.');
-          throw new Error(errorMessage);
+        if (error) {
+          if (error.code === '23505') { // Unique constraint violation
+            throw new Error(`La categoría '${newCategoryName.trim()}' ya existe.`);
+          }
+          throw error;
         }
 
         setNewCategoryName('');
-        onCategoriesUpdate(); // Refetch categories from parent
+        onCategoriesUpdate();
       } catch (error) {
         console.error(error);
         const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
@@ -53,16 +39,19 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   const handleDeleteCategory = async (id: number) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar esta categoría? Esta acción no se puede deshacer.')) {
       try {
-        const response = await fetch(`/api/categories`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id }),
-        });
-        if (!response.ok) {
-           const errorMessage = await getErrorMessage(response, 'No se pudo eliminar la categoría.');
-           throw new Error(errorMessage);
+        const { count, error: countError } = await supabase.from('businesses').select('*', { count: 'exact', head: true }).eq('categoryId', id);
+
+        if (countError) throw countError;
+
+        if (count && count > 0) {
+          alert('No se puede eliminar la categoría porque está siendo utilizada por uno o más negocios.');
+          return;
         }
-        onCategoriesUpdate(); // Refetch categories from parent
+
+        const { error: deleteError } = await supabase.from('categories').delete().eq('id', id);
+        if (deleteError) throw deleteError;
+        
+        onCategoriesUpdate();
       } catch (error) {
         console.error(error);
         const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';

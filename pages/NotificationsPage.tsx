@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MegaphoneIcon } from '../components/Icons';
+import { supabase } from '../supabaseClient';
 
 // This VAPID key would normally be stored in environment variables
 // It's used to identify the application server to the push service.
@@ -55,11 +56,8 @@ export const NotificationsPage: React.FC = () => {
       if (subscription) {
         await subscription.unsubscribe();
         // Notify backend to remove subscription
-        await fetch('/api/unsubscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: subscription.endpoint }),
-        });
+        const { error } = await supabase.from('subscriptions').delete().eq('endpoint', subscription.endpoint);
+        if (error) console.error('Error unsubscribing:', error);
         setIsSubscribed(false);
         alert('Te has desuscrito de las notificaciones.');
       }
@@ -76,11 +74,16 @@ export const NotificationsPage: React.FC = () => {
       });
       
       // Notify backend to save subscription
-      await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription),
-      });
+      const { error } = await supabase.from('subscriptions').upsert({
+          endpoint: subscription.endpoint,
+          subscription_data: subscription,
+      }, { onConflict: 'endpoint' });
+      
+      if (error) {
+        console.error('Error saving subscription:', error);
+        alert('Hubo un error al guardar tu suscripción.');
+        return;
+      }
       
       setIsSubscribed(true);
       alert('¡Gracias por suscribirte a las notificaciones!');
