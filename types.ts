@@ -22,6 +22,7 @@ export interface Business {
   address: string;
   latitude: number;
   longitude: number;
+  googleMapsUrl?: string;
 }
 
 export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';

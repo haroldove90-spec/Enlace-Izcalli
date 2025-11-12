@@ -212,7 +212,7 @@ const App: React.FC = () => {
       case 'adminDashboard':
         return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} />;
       case 'adminAddBusiness':
-        return <AddBusinessPage categories={categories} onAddBusiness={handleAddBusiness} setActiveView={handleViewChange} />;
+        return <AddBusinessPage categories={categories} onAddBusiness={handleAddBusiness} setActiveView={handleViewChange} onCategoriesUpdate={fetchData} />;
       case 'adminManageCategories':
         return <ManageCategoriesPage categories={categories} onCategoriesUpdate={fetchData} />;
        case 'adminClients':
@@ -220,7 +220,7 @@ const App: React.FC = () => {
        case 'adminManageBusinesses':
         return <ManageBusinessesPage businesses={businesses} onToggleStatus={handleToggleBusinessStatus} onEditBusiness={handleEditClick} />;
       case 'adminEditBusiness':
-        return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} setActiveView={handleViewChange} /> : <p>No business selected for editing.</p>;
+        return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} setActiveView={handleViewChange} onCategoriesUpdate={fetchData} /> : <p>No business selected for editing.</p>;
       default:
         return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
     }
@@ -232,7 +232,7 @@ const App: React.FC = () => {
       <div className="flex-1 flex flex-col md:ml-64 overflow-x-hidden">
         {usingFallbackData && (
             <div className="bg-red-500 text-white text-center p-2 text-sm font-semibold sticky top-0 z-50 md:relative">
-              <span>Error de conexión con Supabase. Mostrando datos de ejemplo.</span>
+              <span>Error de conexión. Mostrando datos de ejemplo.</span>
             </div>
         )}
         <Header />

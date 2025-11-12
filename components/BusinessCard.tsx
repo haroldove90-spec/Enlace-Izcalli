@@ -30,6 +30,10 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
       console.error('Error sharing:', err);
     }
   };
+
+  const mapLink = business.googleMapsUrl && business.googleMapsUrl.startsWith('http')
+    ? business.googleMapsUrl
+    : `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`;
   
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full transform hover:scale-105 transition-transform duration-300">
@@ -78,7 +82,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
           <a href={business.website} target="_blank" rel="noopener noreferrer" title="Sitio Web" className="text-gray-600 hover:text-gray-900 transition-colors">
             <WebsiteIcon className="w-6 h-6" />
           </a>
-           <a href={`https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`} target="_blank" rel="noopener noreferrer" title="Ver en Mapa" className="text-gray-600 hover:text-red-600 transition-colors">
+           <a href={mapLink} target="_blank" rel="noopener noreferrer" title="Ver en Mapa" className="text-gray-600 hover:text-red-600 transition-colors">
             <MapPinIcon className="w-6 h-6" />
           </a>
           <button onClick={handleShare} title="Compartir" className="text-gray-600 hover:text-blue-500 transition-colors">

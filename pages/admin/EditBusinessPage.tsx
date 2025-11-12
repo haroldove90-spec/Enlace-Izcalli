@@ -8,9 +8,10 @@ interface EditBusinessPageProps {
   onUpdateBusiness: (business: Business) => void;
   onCancel: () => void;
   setActiveView: (view: View) => void;
+  onCategoriesUpdate: () => Promise<void>;
 }
 
-export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, businessToEdit, onUpdateBusiness, onCancel, setActiveView }) => {
+export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, businessToEdit, onUpdateBusiness, onCancel, setActiveView, onCategoriesUpdate }) => {
 
   const handleSubmit = (businessData: Omit<Business, 'id'> | Business) => {
     onUpdateBusiness(businessData as Business);
@@ -25,6 +26,7 @@ export const EditBusinessPage: React.FC<EditBusinessPageProps> = ({ categories, 
         onCancel={onCancel}
         initialData={businessToEdit}
         setActiveView={setActiveView}
+        onCategoriesUpdate={onCategoriesUpdate}
       />
     </div>
   );
