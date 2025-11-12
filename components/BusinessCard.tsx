@@ -1,6 +1,6 @@
 import React from 'react';
 import { Business } from '../types';
-import { PhoneIcon, WhatsAppIcon, WebsiteIcon, ShareIcon, MapPinIcon } from './Icons';
+import { PhoneIcon, WhatsAppIcon, WebsiteIcon, ShareIcon, MapPinIcon, EnvelopeIcon } from './Icons';
 
 interface BusinessCardProps {
   business: Business;
@@ -98,6 +98,11 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, categoryNa
           {business.whatsapp && (
             <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" className="text-gray-600 hover:text-green-500 transition-colors">
               <WhatsAppIcon className="w-6 h-6" />
+            </a>
+          )}
+           {business.ownerEmail && (
+             <a href={`mailto:${business.ownerEmail}`} title="Enviar Correo" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <EnvelopeIcon className="w-6 h-6" />
             </a>
           )}
           {websiteUrl && (
