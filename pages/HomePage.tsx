@@ -30,16 +30,20 @@ export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getC
     return searchedBusinesses.filter(b => b.isFeatured);
   }, [searchedBusinesses]);
 
+  const nonFeaturedBusinesses = useMemo(() => {
+    return searchedBusinesses.filter(b => !b.isFeatured);
+  }, [searchedBusinesses]);
+
   const businessesByCategory = useMemo(() => {
     const grouped: { [categoryId: number]: Business[] } = {};
-    searchedBusinesses.forEach(business => {
+    nonFeaturedBusinesses.forEach(business => {
       if (!grouped[business.categoryId]) {
         grouped[business.categoryId] = [];
       }
       grouped[business.categoryId].push(business);
     });
     return grouped;
-  }, [searchedBusinesses]);
+  }, [nonFeaturedBusinesses]);
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
