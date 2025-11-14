@@ -1,93 +1,93 @@
-import React, { useState } from 'react';
-import { Category, View } from '../types';
-import { SearchIcon, RestaurantIcon, HealthIcon, BriefcaseIcon, ShoppingIcon, CarIcon, HomeGardenIcon, UtensilsIcon } from '../components/Icons';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Business, Category } from '../types';
+import { BusinessList } from '../components/BusinessList';
+import { SearchIcon } from '../components/Icons';
+import { CategoryFilter } from '../components/CategoryFilter';
+
 
 interface HomePageProps {
   categories: Category[];
-  onSelectCategory: (categoryId: number) => void;
-  onViewChange: (view: View) => void;
+  businesses: Business[];
+  getCategoryName: (categoryId: number) => string;
+  onSelectBusiness: (business: Business) => void;
+  initialFilter: string | number | null;
+  clearInitialFilter: () => void;
 }
 
-const categoryIcons: { [key: number]: React.FC<any> } = {
-  1: RestaurantIcon,
-  2: HealthIcon,
-  3: BriefcaseIcon,
-  4: ShoppingIcon,
-  5: CarIcon,
-  6: HomeGardenIcon,
-};
-
-const CategoryGridItem: React.FC<{ category: Category, onClick: () => void }> = ({ category, onClick }) => {
-  const Icon = categoryIcons[category.id] || BriefcaseIcon;
-  const showUtensils = category.id === 1;
-
-  return (
-    <button
-      onClick={onClick}
-      className="relative group bg-red-600 p-4 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-white text-left flex flex-col justify-between aspect-square"
-    >
-      <div className="flex justify-between items-start">
-        <div className="w-12 h-12 bg-black/20 rounded-full flex items-center justify-center">
-          <Icon className="w-7 h-7 text-white" />
-        </div>
-        {showUtensils && <UtensilsIcon className="w-7 h-7 text-white/30" />}
-      </div>
-      <h3 className="text-lg font-bold uppercase tracking-wide mt-2">{category.name}</h3>
-    </button>
-  );
-};
-
-export const HomePage: React.FC<HomePageProps> = ({ categories, onSelectCategory, onViewChange }) => {
+export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getCategoryName, onSelectBusiness, initialFilter, clearInitialFilter }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<string | number>('featured');
+
+  useEffect(() => {
+    if (initialFilter !== null) {
+      setSelectedFilter(initialFilter);
+      clearInitialFilter(); // Clear the initial filter after applying it once
+    }
+  }, [initialFilter, clearInitialFilter]);
+
+  const filteredBusinesses = useMemo(() => {
+    let results = businesses;
+
+    // Filter by search term first
+    if (searchTerm.trim()) {
+      const lowercasedSearchTerm = searchTerm.toLowerCase();
+      results = results.filter(b => 
+        b.name.toLowerCase().includes(lowercasedSearchTerm) ||
+        b.description.toLowerCase().includes(lowercasedSearchTerm) ||
+        b.services.some(s => s.toLowerCase().includes(lowercasedSearchTerm)) ||
+        b.products.some(p => p.toLowerCase().includes(lowercasedSearchTerm))
+      );
+    }
+    
+    // Then, filter by the selected category/filter
+    if (selectedFilter === 'featured') {
+      return results.filter(b => b.isFeatured);
+    }
+    
+    return results.filter(b => b.categoryId === selectedFilter);
+
+  }, [businesses, searchTerm, selectedFilter]);
+
 
   return (
-    <div className="flex-grow flex flex-col">
-      {/* Header Section (in red background) */}
-      <div className="px-6 py-8 text-white">
-        <h1 className="text-3xl font-black uppercase tracking-wide">Explora Directorios Locales</h1>
-        <div className="w-16 h-1 bg-white/50 mt-2 rounded-full" />
+    <div className="animate-fade-in max-w-7xl mx-auto">
+      <div className="text-center mb-8">
+        <img 
+            src="https://appdesignmex.com/enlaceizcallichica.jpg" 
+            alt="Enlace Izcalli" 
+            className="w-full md:w-3/4 lg:w-1/2 mx-auto rounded-lg shadow-md"
+        />
+        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mt-6">Tu Guía de Negocios en Izcalli</h1>
+        <p className="text-md md:text-lg text-gray-600 mt-2">Encuentra los mejores productos y servicios cerca de ti.</p>
       </div>
 
-      {/* Content Section (white card) */}
-      <div className="flex-grow bg-white rounded-t-3xl shadow-2xl p-6 pb-24">
-        {/* Segmented Control */}
-        <div className="flex bg-slate-100 p-1 rounded-full mb-6 text-sm font-bold">
-          <button className="w-1/2 py-2.5 rounded-full bg-red-600 text-white shadow">
-            CATEGORIAS
-          </button>
-          <button 
-            onClick={() => onViewChange('map')} 
-            className="w-1/2 py-2.5 rounded-full text-slate-600 hover:bg-slate-200"
-          >
-            MAPA
-          </button>
-        </div>
-
-        {/* Search Bar */}
-        <div className="relative mb-6">
+      <div className="mb-8 w-full md:w-3/4 lg:w-1/2 mx-auto">
+        <div className="relative">
           <input
             type="text"
-            placeholder="Buscar por nombre o palabra clave..."
+            placeholder="Buscar negocios, productos o servicios..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-5 py-4 pl-12 border border-slate-200 bg-slate-50 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-shadow text-slate-900 placeholder-slate-500"
+            className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-shadow bg-gray-100 text-black placeholder-gray-600"
           />
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <SearchIcon className="h-5 w-5 text-slate-400" />
+            <SearchIcon className="h-5 w-5 text-gray-400" />
           </div>
         </div>
-
-        {/* Category Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          {categories.map(category => (
-            <CategoryGridItem
-              key={category.id}
-              category={category}
-              onClick={() => onSelectCategory(category.id)}
-            />
-          ))}
-        </div>
       </div>
+      
+      <CategoryFilter categories={categories} selectedFilter={selectedFilter} onSelectFilter={setSelectedFilter} />
+      
+      <BusinessList businesses={filteredBusinesses} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
+      
+      {/* Handle case where search or filter yields no results */}
+      {filteredBusinesses.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-lg text-gray-500">No se encontraron negocios que coincidan con tu búsqueda o filtro.</p>
+          <p className="text-gray-400 mt-2">Intenta con otros términos o selecciona otra categoría.</p>
+        </div>
+      )}
+
     </div>
   );
 };

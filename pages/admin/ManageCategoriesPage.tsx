@@ -61,8 +61,8 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 animate-fade-in max-w-4xl mx-auto border border-slate-200">
-      <h1 className="text-3xl font-bold text-slate-800 mb-6">Gestionar Categorías</h1>
+    <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 animate-fade-in max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Gestionar Categorías</h1>
       
       <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <input
@@ -70,23 +70,23 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           placeholder="Nombre de la nueva categoría"
-          className="flex-grow px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-slate-50 text-slate-900 placeholder-slate-500"
+          className="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-gray-100 text-black placeholder-gray-600"
           disabled={isSubmitting}
         />
         <button
           onClick={handleAddCategory}
           className="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-300 flex-shrink-0"
-          disabled={isSubmitting || !newCategoryName.trim()}
+          disabled={isSubmitting}
         >
           {isSubmitting ? 'Añadiendo...' : 'Añadir'}
         </button>
       </div>
 
-      <div className="border border-slate-200 rounded-lg overflow-hidden">
-        <ul className="divide-y divide-slate-200">
+      <div className="border rounded-lg overflow-hidden">
+        <ul className="divide-y divide-gray-200">
           {categories.length > 0 ? categories.map(category => (
-            <li key={category.id} className="flex justify-between items-center p-3 sm:p-4 gap-4 hover:bg-slate-50">
-              <span className="text-slate-800 break-words flex-1 min-w-0">{category.name}</span>
+            <li key={category.id} className="flex justify-between items-center p-3 sm:p-4 gap-4">
+              <span className="text-gray-800 break-words flex-1 min-w-0">{category.name}</span>
               <button
                 onClick={() => handleDeleteCategory(category.id)}
                 className="text-red-600 hover:text-red-800 font-semibold flex-shrink-0"
@@ -95,7 +95,7 @@ export const ManageCategoriesPage: React.FC<ManageCategoriesPageProps> = ({ cate
               </button>
             </li>
           )) : (
-            <li className="p-4 text-center text-slate-500">No hay categorías para mostrar.</li>
+            <li className="p-4 text-center text-gray-500">No hay categorías para mostrar.</li>
           )}
         </ul>
       </div>

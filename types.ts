@@ -37,5 +37,5 @@ export interface Business {
   averageRating: number;
 }
 
-export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'map' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses' | 'businessDetail' | 'advertise' | 'profile' | 'favorites';
+export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'map' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses' | 'businessDetail' | 'advertise' | 'profile';
 export type UserRole = 'user' | 'admin';
