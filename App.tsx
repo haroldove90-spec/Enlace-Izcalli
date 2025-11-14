@@ -219,12 +219,12 @@ const App: React.FC = () => {
       const business = businesses.find(b => b.id === businessId);
       if (!business) return;
 
-      let newStatus = !currentStatus;
-      let newEndDate = business.promotionEndDate;
+      let newEndDate: string;
+      const isReactivating = !currentStatus;
 
-      if (!currentStatus) { // If reactivating
+      if (isReactivating) { // If reactivating
            const durationInput = prompt("Selecciona la nueva duración en meses para reactivar el anuncio (ej. 1, 3, 6, 12):", "1");
-           if (durationInput === null) return;
+           if (durationInput === null) return; // User cancelled prompt
            
            const months = parseInt(durationInput, 10);
            if (isNaN(months) || months <= 0) {
@@ -239,14 +239,31 @@ const App: React.FC = () => {
          if (!window.confirm('¿Estás seguro de que quieres desactivar este anuncio?')) {
             return;
          }
+         // Set end date to yesterday to make it inactive
+         const yesterday = new Date();
+         yesterday.setDate(yesterday.getDate() - 1);
+         newEndDate = yesterday.toISOString();
       }
       
       try {
-        const { error } = await supabase.from('businesses').update({ isActive: newStatus, promotionEndDate: newEndDate }).eq('id', business.id);
+        // Use snake_case 'promotion_end_date' for the Supabase column.
+        // The 'isActive' status is derived from this date, so we only need to update the date.
+        const { error } = await supabase
+          .from('businesses')
+          .update({ promotion_end_date: newEndDate })
+          .eq('id', business.id);
+
         if (error) throw error;
 
+        // Refetch all data to ensure the UI is in sync with the database.
         await fetchData();
-        if(newStatus) alert(`Negocio reactivado hasta ${new Date(newEndDate).toLocaleDateString()}.`);
+
+        // Provide clear feedback to the user.
+        if (isReactivating) {
+            alert(`Negocio reactivado con éxito. Nueva fecha de vencimiento: ${new Date(newEndDate).toLocaleDateString()}.`);
+        } else {
+            alert('Negocio desactivado con éxito.');
+        }
       } catch (error) {
         console.error(error);
         alert('Error al cambiar el estado del negocio.');
