@@ -5,9 +5,10 @@ import { BusinessCard } from './BusinessCard';
 interface BusinessListProps {
   businesses: Business[];
   getCategoryName: (categoryId: number) => string;
+  onSelectBusiness: (business: Business) => void;
 }
 
-export const BusinessList: React.FC<BusinessListProps> = ({ businesses, getCategoryName }) => {
+export const BusinessList: React.FC<BusinessListProps> = ({ businesses, getCategoryName, onSelectBusiness }) => {
   if (businesses.length === 0) {
     return <p className="text-center text-gray-500 mt-12">No se encontraron negocios en esta categoría.</p>;
   }
@@ -19,6 +20,7 @@ export const BusinessList: React.FC<BusinessListProps> = ({ businesses, getCateg
           key={business.id} 
           business={business} 
           categoryName={getCategoryName(business.categoryId)}
+          onSelect={onSelectBusiness}
         />
       ))}
     </div>

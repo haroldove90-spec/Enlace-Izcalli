@@ -52,6 +52,9 @@ export const BUSINESSES: Business[] = [
     address: "Av. Primero de Mayo, Centro Urbano, 54750 Cuautitlán Izcalli, Méx.",
     latitude: 19.6508,
     longitude: -99.2150,
+    // Fix: Added missing reviews and averageRating properties to conform to the Business type.
+    reviews: [],
+    averageRating: 0,
   },
   {
     id: 2,
@@ -72,6 +75,9 @@ export const BUSINESSES: Business[] = [
     address: "C. de los Sueños 10, Ensueños, 54740 Cuautitlán Izcalli, Méx.",
     latitude: 19.6585,
     longitude: -99.2230,
+    // Fix: Added missing reviews and averageRating properties to conform to the Business type.
+    reviews: [],
+    averageRating: 0,
   },
   {
     id: 3,
@@ -92,6 +98,9 @@ export const BUSINESSES: Business[] = [
     address: "Plaza del Sol, Centro Urbano, 54700 Cuautitlán Izcalli, Méx.",
     latitude: 19.6499,
     longitude: -99.2165,
+    // Fix: Added missing reviews and averageRating properties to conform to the Business type.
+    reviews: [],
+    averageRating: 0,
   },
   {
     id: 4,
@@ -112,6 +121,9 @@ export const BUSINESSES: Business[] = [
     address: "Luna Parc, Av. 1o. de Mayo S/N, 54750 Cuautitlán Izcalli, Méx.",
     latitude: 19.6521,
     longitude: -99.2148,
+    // Fix: Added missing reviews and averageRating properties to conform to the Business type.
+    reviews: [],
+    averageRating: 0,
   },
   {
     id: 5,
@@ -132,6 +144,9 @@ export const BUSINESSES: Business[] = [
     address: "Av. Chalma, Tepalcapa, 54740 Cuautitlán Izcalli, Méx.",
     latitude: 19.6650,
     longitude: -99.2045,
+    // Fix: Added missing reviews and averageRating properties to conform to the Business type.
+    reviews: [],
+    averageRating: 0,
   },
   {
     id: 6,
@@ -152,5 +167,8 @@ export const BUSINESSES: Business[] = [
     address: "C. 20 de Noviembre, Santa Rosa de Lima, 54740 Cuautitlán Izcalli, Méx.",
     latitude: 19.6835,
     longitude: -99.2210,
+    // Fix: Added missing reviews and averageRating properties to conform to the Business type.
+    reviews: [],
+    averageRating: 0,
   }
 ];

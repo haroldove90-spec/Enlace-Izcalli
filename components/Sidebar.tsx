@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
+import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, MapPinIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
 import { View, UserRole } from '../types';
 
 interface SidebarProps {
@@ -14,6 +14,7 @@ const userNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
   { id: 'categories', name: 'Categorias', icon: CategoryIcon },
   { id: 'notifications', name: 'Notificaciones', icon: MegaphoneIcon },
   { id: 'zones', name: 'Zonas', icon: MapIcon },
+  { id: 'map', name: 'Mapa', icon: MapPinIcon },
 ];
 
 const adminNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [

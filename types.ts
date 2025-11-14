@@ -3,6 +3,15 @@ export interface Category {
   name: string;
 }
 
+export interface Review {
+  id: number;
+  businessId: number;
+  userName: string;
+  rating: number; // 1-5
+  comment: string;
+  createdAt: string; // ISO date string
+}
+
 export interface Business {
   id: number;
   name: string;
@@ -23,7 +32,10 @@ export interface Business {
   latitude: number;
   longitude: number;
   googleMapsUrl?: string;
+  // New fields for reviews
+  reviews: Review[];
+  averageRating: number;
 }
 
-export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses';
+export type View = 'home' | 'categories' | 'notifications' | 'zones' | 'map' | 'adminDashboard' | 'adminAddBusiness' | 'adminManageCategories' | 'adminClients' | 'adminEditBusiness' | 'adminManageBusinesses' | 'businessDetail';
 export type UserRole = 'user' | 'admin';

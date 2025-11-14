@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { ZonesPage } from './pages/ZonesPage';
+import { MapViewPage } from './pages/MapViewPage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AddBusinessPage } from './pages/admin/AddBusinessPage';
 import { ManageCategoriesPage } from './pages/admin/ManageCategoriesPage';
@@ -13,9 +14,10 @@ import { ClientsPage } from './pages/admin/ClientsPage';
 import { EditBusinessPage } from './pages/admin/EditBusinessPage';
 import { ManageBusinessesPage } from './pages/admin/ManageBusinessesPage';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
-import { Business, Category, View, UserRole } from './types';
+import { Business, Category, View, UserRole, Review } from './types';
 import { BUSINESSES, CATEGORIES } from './constants';
 import { supabase } from './supabaseClient';
+import { BusinessDetailPage } from './pages/BusinessDetailPage';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -30,53 +32,99 @@ const App: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('home');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('user');
   const [editingBusiness, setEditingBusiness] = useState<Business | null>(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [usingFallbackData, setUsingFallbackData] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    try {
-      const { data: businessesData, error: businessesError } = await supabase.from('businesses').select('*').order('id');
-      const { data: categoriesData, error: categoriesError } = await supabase.from('categories').select('*').order('id');
-      
-      if (businessesError) throw businessesError;
-      if (categoriesError) throw categoriesError;
+    setUsingFallbackData(false);
 
-      let finalBusinesses = Array.isArray(businessesData) ? businessesData : [];
-      const finalCategories = Array.isArray(categoriesData) ? categoriesData : [];
-      
-      // Process expirations right after fetching
-      if (finalBusinesses.length > 0) {
-          const now = new Date();
-          finalBusinesses = finalBusinesses.map(b => {
-              if (b.isActive && new Date(b.promotionEndDate) < now) {
-                  return { ...b, isActive: false };
-              }
-              return b;
-          });
+    try {
+      // Fetch essential data: businesses and categories
+      const [
+        { data: businessesData, error: businessesError },
+        { data: categoriesData, error: categoriesError }
+      ] = await Promise.all([
+        supabase.from('businesses').select('*').order('id'),
+        supabase.from('categories').select('*').order('id')
+      ]);
+
+      if (businessesError || categoriesError) {
+        throw businessesError || categoriesError;
       }
 
-      setBusinesses(finalBusinesses);
-      setCategories(finalCategories);
-      setUsingFallbackData(false);
+      // Fetch non-essential data: reviews. If this fails, the app can still function.
+      const { data: reviewsData, error: reviewsError } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
 
-    } catch (error) {
-      console.error("Failed to fetch data from Supabase, falling back to local mock data:", error);
-      setUsingFallbackData(true);
-      // Fallback to local data on API failure
-      let finalBusinesses = BUSINESSES;
-      const finalCategories = CATEGORIES;
-      const now = new Date();
-      finalBusinesses = finalBusinesses.map(b => {
-          if (b.isActive && new Date(b.promotionEndDate) < now) {
-              return { ...b, isActive: false };
-          }
-          return b;
+      if (reviewsError) {
+        console.warn("Could not fetch reviews, proceeding without them:", reviewsError);
+      }
+
+      const finalCategories: Category[] = Array.isArray(categoriesData) ? categoriesData : [];
+      const allReviewsRaw = (reviewsError || !Array.isArray(reviewsData)) ? [] : reviewsData;
+
+      // Map reviews from snake_case (db) to camelCase (app)
+      const allReviews: Review[] = allReviewsRaw.map((r: any) => ({
+        id: r.id,
+        businessId: r.business_id,
+        userName: r.user_name,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.created_at,
+      }));
+      
+      const processedBusinesses: Business[] = (Array.isArray(businessesData) ? businessesData : []).map((b: any) => {
+        const businessReviews = allReviews.filter(r => r.businessId === b.id);
+        const totalRating = businessReviews.reduce((acc, review) => acc + review.rating, 0);
+        const averageRating = businessReviews.length > 0 ? totalRating / businessReviews.length : 0;
+        const isActive = new Date(b.promotion_end_date) >= new Date();
+
+        // Map business data from snake_case to camelCase to match the app's types
+        return { 
+          id: b.id,
+          name: b.name,
+          description: b.description,
+          logoUrl: b.logo_url,
+          phone: b.phone,
+          whatsapp: b.whatsapp,
+          website: b.website,
+          categoryId: b.category_id,
+          services: b.services || [],
+          products: b.products || [],
+          isFeatured: b.is_featured,
+          ownerName: b.owner_name,
+          ownerEmail: b.owner_email,
+          isActive,
+          promotionEndDate: b.promotion_end_date,
+          address: b.address,
+          latitude: b.latitude,
+          longitude: b.longitude,
+          googleMapsUrl: b.google_maps_url,
+          reviews: businessReviews,
+          averageRating
+        };
       });
 
-      setBusinesses(finalBusinesses);
+      setBusinesses(processedBusinesses);
       setCategories(finalCategories);
+
+    } catch (error) {
+      console.error("Failed to fetch essential data from Supabase, falling back to local mock data:", error);
+      setUsingFallbackData(true);
+      const now = new Date();
+      const fallbackBusinesses = BUSINESSES.map(b => {
+          const isActive = new Date(b.promotionEndDate) >= now;
+          return {
+              ...b,
+              isActive,
+              reviews: [],
+              averageRating: 0,
+          };
+      });
+      setBusinesses(fallbackBusinesses);
+      setCategories(CATEGORIES);
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +133,17 @@ const App: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // This effect keeps the `selectedBusiness` state in sync with the main `businesses` list.
+  // This is useful after a refetch (e.g., after adding a review).
+  useEffect(() => {
+    if (selectedBusiness) {
+      const updatedSelected = businesses.find(b => b.id === selectedBusiness.id);
+      if (updatedSelected && JSON.stringify(selectedBusiness) !== JSON.stringify(updatedSelected)) {
+        setSelectedBusiness(updatedSelected);
+      }
+    }
+  }, [businesses, selectedBusiness]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -122,7 +181,8 @@ const App: React.FC = () => {
 
   const handleUpdateBusiness = async (updatedBusiness: Business) => {
     try {
-      const { error } = await supabase.from('businesses').update(updatedBusiness).eq('id', updatedBusiness.id);
+      const { reviews, averageRating, ...businessToUpdate } = updatedBusiness;
+      const { error } = await supabase.from('businesses').update(businessToUpdate).eq('id', businessToUpdate.id);
       if (error) throw error;
 
       await fetchData();
@@ -135,7 +195,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAddBusiness = async (newBusiness: Omit<Business, 'id'>) => {
+  const handleAddBusiness = async (newBusiness: Omit<Business, 'id' | 'reviews' | 'averageRating'>) => {
      try {
       const { error } = await supabase.from('businesses').insert([newBusiness]);
       if (error) throw error;
@@ -187,6 +247,29 @@ const App: React.FC = () => {
       }
   };
   
+  const handleSelectBusiness = (business: Business) => {
+    setSelectedBusiness(business);
+    setActiveView('businessDetail');
+  };
+  
+  const handleBackToList = () => {
+    setSelectedBusiness(null);
+    setActiveView('home');
+  };
+  
+  const handleAddReview = async (reviewData: Omit<Review, 'id' | 'createdAt'>) => {
+     try {
+        const { error } = await supabase.from('reviews').insert([reviewData]);
+        if (error) throw error;
+        
+        await fetchData(); // This will refetch all data and trigger the useEffect to update the selected business
+        alert('Reseña añadida con éxito!');
+      } catch (error) {
+        console.error("Error adding review:", error);
+        alert('Error al añadir la reseña.');
+      }
+  };
+  
   const getCategoryName = (categoryId: number): string => {
     return categories.find(c => c.id === categoryId)?.name || 'Sin Categoría';
   };
@@ -196,19 +279,32 @@ const App: React.FC = () => {
       <p className="text-lg text-gray-600">Cargando datos...</p>
     </div>
   );
+  
+  const mainPadding = activeView === 'map' ? '' : 'p-4 md:p-8 pb-20 md:pb-8';
 
   const renderContent = () => {
     if (isLoading) return renderLoading();
     
     switch (activeView) {
       case 'home':
-        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
+        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
       case 'categories':
         return <CategoriesPage categories={categories} />;
       case 'notifications':
         return <NotificationsPage />;
       case 'zones':
-        return <ZonesPage businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
+        return <ZonesPage businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
+      case 'map':
+        return <MapViewPage businesses={businesses.filter(b => b.isActive)} categories={categories} onSelectBusiness={handleSelectBusiness} />;
+      case 'businessDetail':
+        return selectedBusiness ? (
+            <BusinessDetailPage 
+                business={selectedBusiness} 
+                onBack={handleBackToList}
+                getCategoryName={getCategoryName}
+                onAddReview={handleAddReview}
+            />
+        ) : <p>Negocio no seleccionado.</p>;
       case 'adminDashboard':
         return <AdminDashboardPage businesses={businesses} categories={categories} setActiveView={handleViewChange} />;
       case 'adminAddBusiness':
@@ -222,7 +318,7 @@ const App: React.FC = () => {
       case 'adminEditBusiness':
         return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} setActiveView={handleViewChange} onCategoriesUpdate={fetchData} /> : <p>No business selected for editing.</p>;
       default:
-        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} />;
+        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
     }
   };
 
@@ -236,7 +332,7 @@ const App: React.FC = () => {
             </div>
         )}
         <Header />
-        <main className="flex-grow p-4 md:p-8 pb-20 md:pb-8">
+        <main className={`flex-grow ${mainPadding}`}>
           {renderContent()}
         </main>
         <BottomNav activeView={activeView} setActiveView={handleViewChange} currentUserRole={currentUserRole}/>

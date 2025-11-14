@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, CategoryIcon, MegaphoneIcon, MapIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
+import { HomeIcon, CategoryIcon, MapIcon, MapPinIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
 import { View, UserRole } from '../types';
 
 interface BottomNavProps {
@@ -11,7 +11,7 @@ interface BottomNavProps {
 const userNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
   { id: 'home', name: 'Home', icon: HomeIcon },
   { id: 'categories', name: 'Categorias', icon: CategoryIcon },
-  { id: 'notifications', name: 'Notificaciones', icon: MegaphoneIcon },
+  { id: 'map', name: 'Mapa', icon: MapPinIcon },
   { id: 'zones', name: 'Zonas', icon: MapIcon },
 ];
 

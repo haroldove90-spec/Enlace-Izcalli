@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { Business, Category } from '../types';
-import { CategoryFilter } from '../components/CategoryFilter';
 import { BusinessList } from '../components/BusinessList';
 import { SearchIcon } from '../components/Icons';
 
@@ -8,33 +7,39 @@ interface HomePageProps {
   categories: Category[];
   businesses: Business[];
   getCategoryName: (categoryId: number) => string;
+  onSelectBusiness: (business: Business) => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getCategoryName }) => {
-  const [selectedFilter, setSelectedFilter] = useState<string | number>('featured');
+export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getCategoryName, onSelectBusiness }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredBusinesses = useMemo(() => {
-    let result = businesses;
-
-    if (selectedFilter === 'featured') {
-      result = result.filter(b => b.isFeatured);
-    } else if (typeof selectedFilter === 'number') {
-      result = result.filter(b => b.categoryId === selectedFilter);
+  const searchedBusinesses = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return businesses;
     }
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    return businesses.filter(b => 
+      b.name.toLowerCase().includes(lowercasedSearchTerm) ||
+      b.description.toLowerCase().includes(lowercasedSearchTerm) ||
+      b.services.some(s => s.toLowerCase().includes(lowercasedSearchTerm)) ||
+      b.products.some(p => p.toLowerCase().includes(lowercasedSearchTerm))
+    );
+  }, [businesses, searchTerm]);
 
-    if (searchTerm) {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
-      result = result.filter(b => 
-        b.name.toLowerCase().includes(lowercasedSearchTerm) ||
-        b.description.toLowerCase().includes(lowercasedSearchTerm) ||
-        b.services.some(s => s.toLowerCase().includes(lowercasedSearchTerm)) ||
-        b.products.some(p => p.toLowerCase().includes(lowercasedSearchTerm))
-      );
-    }
-    
-    return result;
-  }, [businesses, selectedFilter, searchTerm]);
+  const featuredBusinesses = useMemo(() => {
+    return searchedBusinesses.filter(b => b.isFeatured);
+  }, [searchedBusinesses]);
+
+  const businessesByCategory = useMemo(() => {
+    const grouped: { [categoryId: number]: Business[] } = {};
+    searchedBusinesses.forEach(business => {
+      if (!grouped[business.categoryId]) {
+        grouped[business.categoryId] = [];
+      }
+      grouped[business.categoryId].push(business);
+    });
+    return grouped;
+  }, [searchedBusinesses]);
 
   return (
     <div className="animate-fade-in max-w-7xl mx-auto">
@@ -48,7 +53,7 @@ export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getC
         <p className="text-md md:text-lg text-gray-600 mt-2">Encuentra los mejores productos y servicios cerca de ti.</p>
       </div>
 
-      <div className="mb-8 w-full md:w-3/4 lg:w-1/2 mx-auto">
+      <div className="mb-12 w-full md:w-3/4 lg:w-1/2 mx-auto">
         <div className="relative">
           <input
             type="text"
@@ -63,13 +68,40 @@ export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getC
         </div>
       </div>
       
-      <CategoryFilter 
-        categories={categories}
-        selectedFilter={selectedFilter}
-        onSelectFilter={setSelectedFilter}
-      />
-      
-      <BusinessList businesses={filteredBusinesses} getCategoryName={getCategoryName} />
+      <div className="space-y-16">
+        {/* Featured Section */}
+        {featuredBusinesses.length > 0 && (
+          <section>
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-red-500 flex items-center">
+              <span className="mr-3 text-yellow-400 text-3xl">⭐</span>
+              Destacados
+            </h2>
+            <BusinessList businesses={featuredBusinesses} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
+          </section>
+        )}
+
+        {/* Sections per category */}
+        {categories.map(category => {
+          const categoryBusinesses = businessesByCategory[category.id];
+          if (!categoryBusinesses || categoryBusinesses.length === 0) {
+            return null; // Don't render empty categories
+          }
+          return (
+            <section key={category.id}>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6 pb-2 border-b-2 border-gray-200">{category.name}</h2>
+              <BusinessList businesses={categoryBusinesses} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
+            </section>
+          );
+        })}
+        
+        {/* Handle case where search yields no results */}
+        {searchedBusinesses.length === 0 && searchTerm && (
+          <div className="text-center py-16">
+            <p className="text-lg text-gray-500">No se encontraron negocios que coincidan con tu búsqueda.</p>
+            <p className="text-gray-400 mt-2">Intenta con otros términos.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

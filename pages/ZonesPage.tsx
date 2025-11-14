@@ -26,9 +26,10 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number): nu
 interface ZonesPageProps {
   businesses: Business[];
   getCategoryName: (categoryId: number) => string;
+  onSelectBusiness: (business: Business) => void;
 }
 
-export const ZonesPage: React.FC<ZonesPageProps> = ({ businesses, getCategoryName }) => {
+export const ZonesPage: React.FC<ZonesPageProps> = ({ businesses, getCategoryName, onSelectBusiness }) => {
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
 
   const businessesInZone = useMemo(() => {
@@ -66,7 +67,7 @@ export const ZonesPage: React.FC<ZonesPageProps> = ({ businesses, getCategoryNam
           </iframe>
         </div>
         
-        <BusinessList businesses={businessesInZone} getCategoryName={getCategoryName} />
+        <BusinessList businesses={businessesInZone} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
       </div>
     );
   }
