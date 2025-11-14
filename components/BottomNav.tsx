@@ -1,37 +1,27 @@
 import React from 'react';
-import { HomeIcon, CategoryIcon, MapIcon, MapPinIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon, UserCircleIcon } from './Icons';
-import { View, UserRole } from '../types';
+import { HomeIcon, MapPinIcon, UserCircleIcon, StarOutlineIcon } from './Icons';
+import { View } from '../types';
 
 interface BottomNavProps {
   activeView: View;
   setActiveView: (view: View) => void;
-  currentUserRole: UserRole;
 }
 
-const userNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
-  { id: 'home', name: 'Home', icon: HomeIcon },
-  { id: 'categories', name: 'Categorias', icon: CategoryIcon },
+const userNavLinks: { id: View; name:string; icon: React.FC<any> }[] = [
+  { id: 'home', name: 'Inicio', icon: HomeIcon },
   { id: 'map', name: 'Mapa', icon: MapPinIcon },
-  { id: 'zones', name: 'Zonas', icon: MapIcon },
+  { id: 'favorites', name: 'Favoritos', icon: StarOutlineIcon },
   { id: 'profile', name: 'Perfil', icon: UserCircleIcon },
 ];
 
-const adminNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
-  { id: 'adminDashboard', name: 'Dashboard', icon: ChartBarIcon },
-  { id: 'adminAddBusiness', name: 'Añadir', icon: PlusCircleIcon },
-  { id: 'adminManageBusinesses', name: 'Negocios', icon: BriefcaseIcon },
-  { id: 'adminManageCategories', name: 'Categorías', icon: TagIcon },
-  { id: 'adminClients', name: 'Clientes', icon: UsersIcon },
-];
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView, currentUserRole }) => {
-  const navLinks = currentUserRole === 'admin' ? adminNavLinks : userNavLinks;
+export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView }) => {
+  const navLinks = userNavLinks;
   
-  // Adjust grid columns based on number of items for better spacing
   const gridColsClass = `grid-cols-${navLinks.length}`;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-red-600 shadow-t-lg z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-red-600 z-50">
       <div className={`grid ${gridColsClass} h-16`}>
         {navLinks.map((link) => {
             const isActive = activeView === link.id;
@@ -39,11 +29,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView,
               <button
                 key={link.id}
                 onClick={() => setActiveView(link.id)}
-                className={`flex flex-col items-center justify-center text-center w-full px-1 py-1 transition-all duration-200 transform focus:outline-none ${isActive ? 'text-white scale-110' : 'text-red-200'} hover:text-white`}
+                className={`flex flex-col items-center justify-center text-center w-full px-1 py-1 transition-colors duration-200 focus:outline-none ${isActive ? 'text-white' : 'text-white/70'} hover:text-white`}
                 aria-label={link.name}
               >
                 <link.icon className="w-6 h-6 mb-1" />
-                <span className="text-xs font-medium">{link.name}</span>
+                <span className={`text-xs font-medium ${isActive ? 'font-bold' : ''}`}>{link.name}</span>
               </button>
             )
         })}

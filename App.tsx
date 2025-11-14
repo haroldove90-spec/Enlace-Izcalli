@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { HomePage } from './pages/HomePage';
 import { CategoriesPage } from './pages/CategoriesPage';
@@ -20,6 +19,7 @@ import { supabase } from './supabaseClient';
 import { BusinessDetailPage } from './pages/BusinessDetailPage';
 import { AdvertisePage } from './pages/AdvertisePage';
 import { ProfilePage } from './pages/ProfilePage';
+import { FavoritesPage } from './pages/FavoritesPage';
 
 
 interface BeforeInstallPromptEvent extends Event {
@@ -277,8 +277,13 @@ const App: React.FC = () => {
   };
   
   const handleCategorySelect = (categoryId: number) => {
+    // This function will likely navigate to a new page showing business lists
+    // For now, it filters the home page which is not the current design.
+    // Let's console log for now and maybe build a business list page later.
+    console.log("Category selected:", categoryId);
+    // Let's implement a proper list view
     setInitialCategoryFilter(categoryId);
-    setActiveView('home');
+    setActiveView('home'); // Or a new view 'businessList'
   };
   
   const getCategoryName = (categoryId: number): string => {
@@ -286,25 +291,29 @@ const App: React.FC = () => {
   };
   
   const renderLoading = () => (
-    <div className="flex justify-center items-center h-full">
-      <p className="text-lg text-gray-600">Cargando datos...</p>
+    <div className="flex justify-center items-center h-full text-white">
+      <p className="text-lg">Cargando datos...</p>
     </div>
   );
-  
-  const mainPadding = activeView === 'map' ? '' : 'p-4 md:p-8 pb-20 md:pb-8';
 
   const renderContent = () => {
     if (isLoading) return renderLoading();
     
+    // The new design uses HomePage for categories. If a filter is applied, we could show a business list.
+    // For now, let's stick to the main design.
+    if (activeView === 'home' && initialCategoryFilter) {
+      // Here we would render a list of businesses for the selected category.
+      // For this iteration, clicking a category on HomePage will just log to console.
+      // Let's reset the filter to show the main homepage.
+      // A better implementation would be a new view e.g., 'businessList'
+    }
+
     switch (activeView) {
       case 'home':
         return <HomePage 
                   categories={categories} 
-                  businesses={businesses.filter(b => b.isActive)} 
-                  getCategoryName={getCategoryName} 
-                  onSelectBusiness={handleSelectBusiness} 
-                  initialFilter={initialCategoryFilter}
-                  clearInitialFilter={() => setInitialCategoryFilter(null)}
+                  onSelectCategory={handleCategorySelect}
+                  onViewChange={handleViewChange}
                 />;
       case 'categories':
         return <CategoriesPage categories={categories} onSelectCategory={handleCategorySelect} />;
@@ -314,6 +323,8 @@ const App: React.FC = () => {
         return <ZonesPage businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
       case 'map':
         return <MapViewPage businesses={businesses.filter(b => b.isActive)} categories={categories} onSelectBusiness={handleSelectBusiness} />;
+      case 'favorites':
+        return <FavoritesPage />;
       case 'advertise':
          return <AdvertisePage setActiveView={handleViewChange} />;
       case 'profile':
@@ -340,24 +351,23 @@ const App: React.FC = () => {
       case 'adminEditBusiness':
         return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} setActiveView={handleViewChange} onCategoriesUpdate={fetchData} /> : <p>No business selected for editing.</p>;
       default:
-        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} initialFilter={null} clearInitialFilter={() => {}} />;
+        return <HomePage categories={categories} onSelectCategory={handleCategorySelect} onViewChange={handleViewChange} />;
     }
   };
 
   return (
-    <div className="flex bg-gray-100 min-h-screen">
+    <div className="flex bg-red-600 md:bg-slate-50 min-h-screen">
       <Sidebar activeView={activeView} setActiveView={handleViewChange} currentUserRole={currentUserRole} setCurrentUserRole={setCurrentUserRole}/>
       <div className="flex-1 flex flex-col md:ml-64 overflow-x-hidden">
         {usingFallbackData && (
-            <div className="bg-red-500 text-white text-center p-2 text-sm font-semibold sticky top-0 z-50 md:relative">
+            <div className="bg-yellow-400 text-black text-center p-2 text-sm font-semibold sticky top-0 z-50">
               <span>Error de conexión. Mostrando datos de ejemplo.</span>
             </div>
         )}
-        <Header />
-        <main className={`flex-grow ${mainPadding}`}>
+        <main className="flex-grow flex flex-col">
           {renderContent()}
         </main>
-        <BottomNav activeView={activeView} setActiveView={handleViewChange} currentUserRole={currentUserRole}/>
+        <BottomNav activeView={activeView} setActiveView={handleViewChange} />
         {showInstallPrompt && <PwaInstallPrompt onInstall={handleInstallClick} onDismiss={() => setShowInstallPrompt(false)} />}
       </div>
     </div>

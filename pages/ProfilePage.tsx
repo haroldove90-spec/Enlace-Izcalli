@@ -18,40 +18,48 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ setActiveView, current
   };
 
   return (
-    <div className="animate-fade-in max-w-4xl mx-auto">
-        <div className="flex flex-col items-center mb-8">
-            <UserCircleIcon className="w-24 h-24 text-gray-400 mb-4" />
-            <h1 className="text-3xl font-bold text-gray-800">Mi Perfil</h1>
-            <p className="text-gray-600">Gestiona tus preferencias y ajustes.</p>
-        </div>
+    <div className="flex-grow flex flex-col">
+       {/* Header Section */}
+       <div className="px-6 py-8 text-white text-center">
+          <UserCircleIcon className="w-20 h-20 text-white/80 mx-auto mb-4" />
+          <h1 className="text-3xl font-black uppercase tracking-wide">Mi Perfil</h1>
+          <p className="text-white/80 mt-1">Gestiona tus preferencias y ajustes.</p>
+      </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
-             {/* Advertise Link */}
-             <div 
-                className="group flex items-center p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-                onClick={() => setActiveView('advertise')}
-            >
-                <MegaphoneIcon className="w-8 h-8 text-red-500 mr-4" />
-                <div>
-                    <h3 className="font-bold text-gray-800 group-hover:text-red-600">Anúnciate con Nosotros</h3>
-                    <p className="text-sm text-gray-600">Haz crecer tu negocio llegando a más clientes locales.</p>
-                </div>
-             </div>
+       {/* Content Section (white card) */}
+       <div className="flex-grow bg-white rounded-t-3xl shadow-2xl p-6 pb-24">
+          <div className="space-y-4 max-w-md mx-auto">
+              {/* Advertise Link */}
+              <button 
+                  className="group w-full flex items-center p-4 bg-slate-50 rounded-lg hover:bg-red-50 transition-colors cursor-pointer border border-slate-200 hover:border-red-200 text-left"
+                  onClick={() => setActiveView('advertise')}
+              >
+                  <div className="flex-shrink-0 bg-red-100 p-3 rounded-full mr-4">
+                    <MegaphoneIcon className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div>
+                      <h3 className="font-bold text-slate-800 group-hover:text-red-700 transition-colors">Anúnciate con Nosotros</h3>
+                      <p className="text-sm text-slate-600">Haz crecer tu negocio llegando a más clientes locales.</p>
+                  </div>
+              </button>
 
-             {/* Admin Toggle */}
-             <div 
-                className="group flex items-center p-4 bg-gray-50 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-                onClick={handleRoleChange}
-            >
-                <ShieldCheckIcon className="w-8 h-8 text-red-500 mr-4" />
-                <div>
-                    <h3 className="font-bold text-gray-800 group-hover:text-red-600">
-                        {currentUserRole === 'user' ? 'Cambiar a Vista de Admin' : 'Volver a Vista de Usuario'}
-                    </h3>
-                    <p className="text-sm text-gray-600">Accede al panel de administración para gestionar el contenido.</p>
-                </div>
-             </div>
-        </div>
+              {/* Admin Toggle */}
+              <button
+                  className="group w-full flex items-center p-4 bg-slate-50 rounded-lg hover:bg-red-50 transition-colors cursor-pointer border border-slate-200 hover:border-red-200 text-left"
+                  onClick={handleRoleChange}
+              >
+                  <div className="flex-shrink-0 bg-red-100 p-3 rounded-full mr-4">
+                    <ShieldCheckIcon className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div>
+                      <h3 className="font-bold text-slate-800 group-hover:text-red-700 transition-colors">
+                          {currentUserRole === 'user' ? 'Cambiar a Vista de Admin' : 'Volver a Vista de Usuario'}
+                      </h3>
+                      <p className="text-sm text-slate-600">Accede al panel de administración para gestionar el contenido.</p>
+                  </div>
+              </button>
+          </div>
+      </div>
     </div>
   );
 };

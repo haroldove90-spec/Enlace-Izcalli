@@ -73,9 +73,17 @@ export const ShieldCheckIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) 
 
 export const RestaurantIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <Icon {...props}>
-        <path fillRule="evenodd" d="M2.25 4.5A.75.75 0 013 3.75h14.25a.75.75 0 010 1.5H3a.75.75 0 01-.75-.75zM2.25 9A.75.75 0 013 8.25h9.75a.75.75 0 010 1.5H3A.75.75 0 012.25 9zM2.25 13.5A.75.75 0 013 12.75h14.25a.75.75 0 010 1.5H3a.75.75 0 01-.75-.75zM2.25 18A.75.75 0 013 17.25h9.75a.75.75 0 010 1.5H3A.75.75 0 012.25 18z" clipRule="evenodd" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
     </Icon>
 );
+
+export const UtensilsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Icon {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 21.75a2.25 2.25 0 01-2.25-2.25v-8.25a2.25 2.25 0 012.25-2.25h.5a2.25 2.25 0 012.25 2.25v8.25a2.25 2.25 0 01-2.25 2.25h-.5zm5.834-15.334a2.25 2.25 0 00-3.182-3.182 2.25 2.25 0 00-3.182 3.182s3.182 3.182 3.182 3.182l3.182-3.182z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v13.5" />
+  </Icon>
+);
+
 
 export const HealthIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <Icon {...props}>
@@ -159,6 +167,12 @@ export const EnvelopeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
 
 export const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <Icon {...props} fill="currentColor" strokeWidth={0}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+  </Icon>
+);
+
+export const StarOutlineIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Icon {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
   </Icon>
 );

@@ -6,19 +6,19 @@ import { StarRating } from '../components/StarRating';
 // --- ReviewList Component ---
 const ReviewList: React.FC<{ reviews: Review[] }> = ({ reviews }) => {
   if (reviews.length === 0) {
-    return <p className="text-center text-gray-500 mt-8">Aún no hay reseñas. ¡Sé el primero en dejar una!</p>;
+    return <p className="text-center text-slate-500 mt-8">Aún no hay reseñas. ¡Sé el primero en dejar una!</p>;
   }
 
   return (
     <div className="space-y-6">
       {reviews.map((review) => (
-        <div key={review.id} className="bg-gray-50 p-4 rounded-lg border">
+        <div key={review.id} className="bg-slate-50 p-4 rounded-lg border border-slate-200">
           <div className="flex items-center mb-2">
             <StarRating rating={review.rating} />
-            <p className="ml-3 font-bold text-gray-800">{review.userName}</p>
+            <p className="ml-3 font-bold text-slate-800">{review.userName}</p>
           </div>
-          <p className="text-gray-600">{review.comment}</p>
-           <p className="text-xs text-gray-400 mt-2">
+          <p className="text-slate-600">{review.comment}</p>
+           <p className="text-xs text-slate-400 mt-2">
               {new Date(review.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
@@ -58,37 +58,37 @@ const ReviewForm: React.FC<{
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md border mt-8">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">Deja tu Reseña</h3>
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md border border-slate-200 mt-8">
+      <h3 className="text-xl font-bold text-slate-800 mb-4">Deja tu Reseña</h3>
       <div className="space-y-4">
         <div>
-          <label htmlFor="userName" className="block text-sm font-medium text-gray-700">Tu Nombre</label>
+          <label htmlFor="userName" className="block text-sm font-medium text-slate-700">Tu Nombre</label>
           <input
             id="userName"
             type="text"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-gray-100 text-black"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-slate-50 text-slate-900"
             required
             disabled={isSubmitting}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Calificación</label>
+          <label className="block text-sm font-medium text-slate-700">Calificación</label>
           <StarRating rating={rating} onRatingChange={setRating} interactive className="h-7 w-7" />
         </div>
         <div>
-          <label htmlFor="comment" className="block text-sm font-medium text-gray-700">Comentario (opcional)</label>
+          <label htmlFor="comment" className="block text-sm font-medium text-slate-700">Comentario (opcional)</label>
           <textarea
             id="comment"
             rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-gray-100 text-black"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm bg-slate-50 text-slate-900"
             disabled={isSubmitting}
           />
         </div>
-        <button type="submit" disabled={isSubmitting || rating === 0} className="w-full bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-300 disabled:cursor-not-allowed">
+        <button type="submit" disabled={isSubmitting || rating === 0} className="w-full bg-red-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:bg-red-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
           {isSubmitting ? 'Enviando...' : 'Enviar Reseña'}
         </button>
       </div>
@@ -121,7 +121,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
        <BusinessCard business={business} categoryName={getCategoryName(business.categoryId)} isDetailPage={true} />
 
       <div className="mt-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Reseñas y Calificaciones</h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-4">Reseñas y Calificaciones</h2>
         <ReviewList reviews={business.reviews} />
         <ReviewForm businessId={business.id} onAddReview={onAddReview} />
       </div>

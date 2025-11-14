@@ -54,12 +54,12 @@ export const ZonesPage: React.FC<ZonesPageProps> = ({ businesses, getCategoryNam
           </svg>
           Volver a Zonas
         </button>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedZone.name}</h1>
-        <p className="text-gray-600 mb-6">Explorando negocios cerca de {selectedZone.name}.</p>
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">{selectedZone.name}</h1>
+        <p className="text-slate-600 mb-6">Explorando negocios cerca de {selectedZone.name}.</p>
         
         <div className="mb-8">
           <iframe
-            className="w-full h-64 md:h-96 rounded-lg shadow-md border"
+            className="w-full h-64 md:h-96 rounded-lg shadow-md border border-slate-200"
             loading="lazy"
             allowFullScreen
             src={`https://maps.google.com/maps?q=${selectedZone.latitude},${selectedZone.longitude}&hl=es;z=${selectedZone.zoom}&amp;output=embed`}
@@ -76,8 +76,8 @@ export const ZonesPage: React.FC<ZonesPageProps> = ({ businesses, getCategoryNam
     <div className="animate-fade-in max-w-7xl mx-auto">
       <div className="text-center">
         <MapIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Explora por Zona</h1>
-        <p className="text-center text-gray-600 mb-8">
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">Explora por Zona</h1>
+        <p className="text-center text-slate-600 mb-8">
           Encuentra los mejores comercios seleccionando una de las zonas comerciales clave de Cuautitlán Izcalli.
         </p>
       </div>
@@ -87,12 +87,12 @@ export const ZonesPage: React.FC<ZonesPageProps> = ({ businesses, getCategoryNam
           <button
             key={zone.id}
             onClick={() => setSelectedZone(zone)}
-            className="group flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-md hover:shadow-xl hover:bg-red-600 transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            className="group flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm hover:shadow-lg hover:bg-red-600 transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
-            <div className="mb-3 p-4 bg-red-100 rounded-full group-hover:bg-white transition-colors duration-300">
-              <MapIcon className="w-8 h-8 text-red-600 group-hover:text-red-500 transition-colors duration-300" />
+            <div className="mb-4 p-4 bg-red-100 rounded-full group-hover:bg-white transition-colors duration-300">
+              <MapIcon className="w-8 h-8 text-red-600 group-hover:text-red-600 transition-colors duration-300" />
             </div>
-            <h3 className="text-center font-semibold text-gray-700 group-hover:text-white transition-colors duration-300">{zone.name}</h3>
+            <h3 className="text-center font-semibold text-slate-700 group-hover:text-white transition-colors duration-300">{zone.name}</h3>
           </button>
         ))}
       </div>

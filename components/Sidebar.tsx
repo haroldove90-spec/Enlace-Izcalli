@@ -36,35 +36,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, cur
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 sticky top-0 h-screen">
-      <div className="flex items-center justify-center p-6 border-b border-gray-200">
+    <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 sticky top-0 h-screen">
+      <div className="flex items-center justify-center p-6 border-b border-slate-200">
         <button onClick={() => setActiveView('home')} aria-label="Página de inicio de Enlace Izcalli">
           <img 
             src="https://appdesignmex.com/enlaceizcallidigitall.png" 
             alt="Enlace Izcalli Logo" 
-            className="h-12 w-auto"
+            className="h-10 w-auto"
           />
         </button>
       </div>
       <nav className="flex-1 px-4 py-6">
         <ul>
-          {navLinks.map((link) => (
-            <li key={link.id}>
-              <button 
-                onClick={() => setActiveView(link.id)}
-                className={`w-full flex items-center px-4 py-3 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:text-red-600 transition-colors duration-200 text-left ${activeView === link.id ? 'bg-red-50 text-red-600' : ''}`}
-              >
-                <link.icon className="w-6 h-6 mr-3" />
-                <span>{link.name}</span>
-              </button>
-            </li>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = activeView === link.id;
+            return (
+              <li key={link.id}>
+                <button 
+                  onClick={() => setActiveView(link.id)}
+                  className={`w-full flex items-center px-4 py-3 text-slate-600 font-semibold rounded-lg hover:bg-slate-100 hover:text-red-600 transition-colors duration-200 text-left relative ${isActive ? 'bg-red-50 text-red-600' : ''}`}
+                >
+                  {isActive && <span className="absolute left-0 top-2 bottom-2 w-1 bg-red-600 rounded-r-full"></span>}
+                  <link.icon className="w-6 h-6 mr-3" />
+                  <span>{link.name}</span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       </nav>
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center justify-center space-x-2 bg-gray-100 p-2 rounded-lg">
-          <span className="text-sm font-medium text-gray-600">Vista: {currentUserRole === 'user' ? 'Usuario' : 'Admin'}</span>
-          <button onClick={handleRoleChange} className="text-sm text-red-600 hover:text-red-800 font-semibold focus:outline-none">Cambiar</button>
+      <div className="p-4 border-t border-slate-200">
+        <div className="flex items-center justify-between bg-slate-100 p-2 rounded-lg">
+          <span className="text-sm font-medium text-slate-600 pl-2">
+            Vista: <span className="font-bold text-slate-800">{currentUserRole === 'user' ? 'Usuario' : 'Admin'}</span>
+          </span>
+          <button 
+            onClick={handleRoleChange} 
+            className="text-sm text-red-600 hover:text-white font-semibold focus:outline-none bg-white hover:bg-red-500 border border-red-200 hover:border-red-500 rounded-md px-3 py-1 transition-all duration-200"
+          >
+            Cambiar
+          </button>
         </div>
       </div>
     </aside>
