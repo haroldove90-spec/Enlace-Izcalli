@@ -16,37 +16,40 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getCategoryName, onSelectBusiness, initialFilter, clearInitialFilter }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<string | number>('featured');
+  const [selectedFilter, setSelectedFilter] = useState<number | 'all'>('all');
 
   useEffect(() => {
     if (initialFilter !== null) {
-      setSelectedFilter(initialFilter);
+      if (typeof initialFilter === 'number') {
+        setSelectedFilter(initialFilter);
+      }
       clearInitialFilter(); // Clear the initial filter after applying it once
     }
   }, [initialFilter, clearInitialFilter]);
 
-  const filteredBusinesses = useMemo(() => {
-    let results = businesses;
-
-    // Filter by search term first
-    if (searchTerm.trim()) {
-      const lowercasedSearchTerm = searchTerm.toLowerCase();
-      results = results.filter(b => 
-        b.name.toLowerCase().includes(lowercasedSearchTerm) ||
-        b.description.toLowerCase().includes(lowercasedSearchTerm) ||
-        b.services.some(s => s.toLowerCase().includes(lowercasedSearchTerm)) ||
-        b.products.some(p => p.toLowerCase().includes(lowercasedSearchTerm))
-      );
+  const searchedBusinesses = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return businesses;
     }
-    
-    // Then, filter by the selected category/filter
-    if (selectedFilter === 'featured') {
-      return results.filter(b => b.isFeatured);
-    }
-    
-    return results.filter(b => b.categoryId === selectedFilter);
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    return businesses.filter(b => 
+      b.name.toLowerCase().includes(lowercasedSearchTerm) ||
+      b.description.toLowerCase().includes(lowercasedSearchTerm) ||
+      b.services.some(s => s.toLowerCase().includes(lowercasedSearchTerm)) ||
+      b.products.some(p => p.toLowerCase().includes(lowercasedSearchTerm))
+    );
+  }, [businesses, searchTerm]);
+  
+  const featuredBusinesses = useMemo(() => {
+    return searchedBusinesses.filter(b => b.isFeatured);
+  }, [searchedBusinesses]);
 
-  }, [businesses, searchTerm, selectedFilter]);
+  const categoryFilteredBusinesses = useMemo(() => {
+    if (selectedFilter === 'all') {
+      return searchedBusinesses;
+    }
+    return searchedBusinesses.filter(b => b.categoryId === selectedFilter);
+  }, [searchedBusinesses, selectedFilter]);
 
 
   return (
@@ -76,12 +79,31 @@ export const HomePage: React.FC<HomePageProps> = ({ categories, businesses, getC
         </div>
       </div>
       
+      {/* Featured Section */}
+      <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center border-b-2 border-red-200 pb-2">
+              ⭐ Negocios Destacados
+          </h2>
+          {featuredBusinesses.length > 0 ? (
+            <BusinessList businesses={featuredBusinesses} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-lg text-gray-500">
+                {searchTerm.trim()
+                  ? "No se encontraron negocios destacados que coincidan con tu búsqueda."
+                  : "No hay negocios destacados en este momento."
+                }
+              </p>
+            </div>
+          )}
+      </div>
+
       <CategoryFilter categories={categories} selectedFilter={selectedFilter} onSelectFilter={setSelectedFilter} />
       
-      <BusinessList businesses={filteredBusinesses} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
+      <BusinessList businesses={categoryFilteredBusinesses} getCategoryName={getCategoryName} onSelectBusiness={onSelectBusiness} />
       
       {/* Handle case where search or filter yields no results */}
-      {filteredBusinesses.length === 0 && (
+      {categoryFilteredBusinesses.length === 0 && (
         <div className="text-center py-16">
           <p className="text-lg text-gray-500">No se encontraron negocios que coincidan con tu búsqueda o filtro.</p>
           <p className="text-gray-400 mt-2">Intenta con otros términos o selecciona otra categoría.</p>

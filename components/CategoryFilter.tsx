@@ -3,8 +3,8 @@ import { Category } from '../types';
 
 interface CategoryFilterProps {
   categories: Category[];
-  selectedFilter: string | number;
-  onSelectFilter: (filter: string | number) => void;
+  selectedFilter: number | 'all';
+  onSelectFilter: (filter: number | 'all') => void;
 }
 
 export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, selectedFilter, onSelectFilter }) => {
@@ -14,13 +14,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({ categories, sele
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center">Explora Categorías</h2>
+      <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center">Explora Por Categoría</h2>
       <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
         <button
-          onClick={() => onSelectFilter('featured')}
-          className={`${baseClasses} ${selectedFilter === 'featured' ? activeClasses : inactiveClasses}`}
+          onClick={() => onSelectFilter('all')}
+          className={`${baseClasses} ${selectedFilter === 'all' ? activeClasses : inactiveClasses}`}
         >
-          ⭐ Destacados
+          Todos
         </button>
         {categories.map(category => (
           <button
