@@ -18,6 +18,9 @@ import { Business, Category, View, UserRole, Review } from './types';
 import { BUSINESSES, CATEGORIES } from './constants';
 import { supabase } from './supabaseClient';
 import { BusinessDetailPage } from './pages/BusinessDetailPage';
+import { AdvertisePage } from './pages/AdvertisePage';
+import { ProfilePage } from './pages/ProfilePage';
+
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -36,6 +39,8 @@ const App: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [usingFallbackData, setUsingFallbackData] = useState(false);
+  const [initialCategoryFilter, setInitialCategoryFilter] = useState<string | number | null>(null);
+
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -172,6 +177,7 @@ const App: React.FC = () => {
        setCurrentUserRole('admin');
     }
     setActiveView(view);
+    window.scrollTo(0, 0); // Scroll to top on view change
   };
   
   const handleEditClick = (business: Business) => {
@@ -270,6 +276,11 @@ const App: React.FC = () => {
       }
   };
   
+  const handleCategorySelect = (categoryId: number) => {
+    setInitialCategoryFilter(categoryId);
+    setActiveView('home');
+  };
+  
   const getCategoryName = (categoryId: number): string => {
     return categories.find(c => c.id === categoryId)?.name || 'Sin Categoría';
   };
@@ -287,15 +298,26 @@ const App: React.FC = () => {
     
     switch (activeView) {
       case 'home':
-        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
+        return <HomePage 
+                  categories={categories} 
+                  businesses={businesses.filter(b => b.isActive)} 
+                  getCategoryName={getCategoryName} 
+                  onSelectBusiness={handleSelectBusiness} 
+                  initialFilter={initialCategoryFilter}
+                  clearInitialFilter={() => setInitialCategoryFilter(null)}
+                />;
       case 'categories':
-        return <CategoriesPage categories={categories} />;
+        return <CategoriesPage categories={categories} onSelectCategory={handleCategorySelect} />;
       case 'notifications':
         return <NotificationsPage />;
       case 'zones':
         return <ZonesPage businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
       case 'map':
         return <MapViewPage businesses={businesses.filter(b => b.isActive)} categories={categories} onSelectBusiness={handleSelectBusiness} />;
+      case 'advertise':
+         return <AdvertisePage setActiveView={handleViewChange} />;
+      case 'profile':
+         return <ProfilePage setActiveView={handleViewChange} currentUserRole={currentUserRole} setCurrentUserRole={setCurrentUserRole} />;
       case 'businessDetail':
         return selectedBusiness ? (
             <BusinessDetailPage 
@@ -318,7 +340,7 @@ const App: React.FC = () => {
       case 'adminEditBusiness':
         return editingBusiness ? <EditBusinessPage businessToEdit={editingBusiness} categories={categories} onUpdateBusiness={handleUpdateBusiness} onCancel={() => setActiveView('adminClients')} setActiveView={handleViewChange} onCategoriesUpdate={fetchData} /> : <p>No business selected for editing.</p>;
       default:
-        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} />;
+        return <HomePage categories={categories} businesses={businesses.filter(b => b.isActive)} getCategoryName={getCategoryName} onSelectBusiness={handleSelectBusiness} initialFilter={null} clearInitialFilter={() => {}} />;
     }
   };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, CategoryIcon, MapIcon, MapPinIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon } from './Icons';
+import { HomeIcon, CategoryIcon, MapIcon, MapPinIcon, ChartBarIcon, PlusCircleIcon, TagIcon, UsersIcon, BriefcaseIcon, UserCircleIcon } from './Icons';
 import { View, UserRole } from '../types';
 
 interface BottomNavProps {
@@ -13,6 +13,7 @@ const userNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
   { id: 'categories', name: 'Categorias', icon: CategoryIcon },
   { id: 'map', name: 'Mapa', icon: MapPinIcon },
   { id: 'zones', name: 'Zonas', icon: MapIcon },
+  { id: 'profile', name: 'Perfil', icon: UserCircleIcon },
 ];
 
 const adminNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
@@ -24,12 +25,7 @@ const adminNavLinks: { id: View; name: string; icon: React.FC<any> }[] = [
 ];
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView, currentUserRole }) => {
-  let navLinks = currentUserRole === 'admin' ? adminNavLinks : userNavLinks;
-
-  // Add the admin toggle to user view for mobile demo without mutating the original array
-  if (currentUserRole === 'user') {
-    navLinks = [...userNavLinks, { id: 'adminDashboard', name: 'Admin', icon: ChartBarIcon }];
-  }
+  const navLinks = currentUserRole === 'admin' ? adminNavLinks : userNavLinks;
   
   // Adjust grid columns based on number of items for better spacing
   const gridColsClass = `grid-cols-${navLinks.length}`;

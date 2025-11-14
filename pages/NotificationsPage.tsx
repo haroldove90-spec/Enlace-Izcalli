@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MegaphoneIcon } from '../components/Icons';
+import { BellIcon } from '../components/Icons';
 import { supabase } from '../supabaseClient';
 
 // This VAPID key would normally be stored in environment variables
@@ -21,6 +21,11 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return outputArray;
 };
 
+const mockNotifications = [
+    { id: 1, title: '¡Nueva Oferta en Tacos El Padrino!', body: 'Disfruta de un 2x1 en tacos al pastor todos los martes.', date: 'Hace 2 días' },
+    { id: 2, title: 'Boutique La Elegancia: Nueva Colección', body: 'Llegó la nueva temporada de primavera. ¡Ven a conocerla!', date: 'La semana pasada' },
+    { id: 3, title: 'Clínica Dental Sonrisa Feliz te espera', body: 'Agenda tu cita de limpieza dental este mes y obtén un 15% de descuento.', date: 'Hace 2 semanas' },
+];
 
 export const NotificationsPage: React.FC = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -115,23 +120,28 @@ export const NotificationsPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 animate-fade-in max-w-7xl mx-auto text-center">
-        <MegaphoneIcon className="w-20 h-20 text-red-500 mx-auto mb-6" />
+    <div className="animate-fade-in max-w-7xl mx-auto space-y-12">
+      <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+        <BellIcon className="w-20 h-20 text-red-500 mx-auto mb-6" />
         <h1 className="text-4xl font-extrabold text-gray-800 mb-2">Mantente Conectado</h1>
         <p className="text-xl text-gray-600 mb-8">Activa las notificaciones para recibir ofertas exclusivas y ser el primero en conocer los nuevos negocios en Izcalli.</p>
+        {renderSubscriptionButton()}
+      </div>
 
-        <div className="my-12">
-            {renderSubscriptionButton()}
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center">Últimas Notificaciones</h2>
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {mockNotifications.map(notif => (
+            <div key={notif.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex justify-between items-start">
+                <p className="font-semibold text-gray-800">{notif.title}</p>
+                <span className="text-xs text-gray-400 flex-shrink-0 ml-4">{notif.date}</span>
+              </div>
+              <p className="text-gray-600 mt-1">{notif.body}</p>
+            </div>
+          ))}
         </div>
-        
-        <div className="mt-12 text-left max-w-2xl mx-auto text-gray-600">
-             <h2 className="text-2xl font-bold text-gray-700 mb-4 text-center">¿Qué recibirás?</h2>
-             <ul className="list-disc list-inside space-y-2">
-                <li><span className="font-semibold">Promociones Especiales:</span> Descuentos y ofertas que solo los suscriptores conocen.</li>
-                <li><span className="font-semibold">Nuevos Negocios:</span> Entérate cuando un nuevo y emocionante comercio se una a nuestro directorio.</li>
-                <li><span className="font-semibold">Eventos Locales:</span> Información sobre eventos y actividades en los comercios de Cuautitlán Izcalli.</li>
-             </ul>
-        </div>
+      </div>
     </div>
   );
 };
