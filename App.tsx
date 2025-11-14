@@ -187,8 +187,30 @@ const App: React.FC = () => {
 
   const handleUpdateBusiness = async (updatedBusiness: Business) => {
     try {
-      const { reviews, averageRating, ...businessToUpdate } = updatedBusiness;
-      const { error } = await supabase.from('businesses').update(businessToUpdate).eq('id', businessToUpdate.id);
+      // Destructure to get the ID and remove client-side calculated or un-editable fields
+      const { id, reviews, averageRating, isActive, promotionEndDate, ...businessToUpdate } = updatedBusiness;
+
+      // Map from camelCase (app) to snake_case (db)
+      const businessForDb = {
+        name: businessToUpdate.name,
+        description: businessToUpdate.description,
+        logo_url: businessToUpdate.logoUrl,
+        phone: businessToUpdate.phone,
+        whatsapp: businessToUpdate.whatsapp,
+        website: businessToUpdate.website,
+        category_id: businessToUpdate.categoryId,
+        services: businessToUpdate.services,
+        products: businessToUpdate.products,
+        is_featured: businessToUpdate.isFeatured,
+        owner_name: businessToUpdate.ownerName,
+        owner_email: businessToUpdate.ownerEmail,
+        address: businessToUpdate.address,
+        latitude: businessToUpdate.latitude,
+        longitude: businessToUpdate.longitude,
+        google_maps_url: businessToUpdate.googleMapsUrl,
+      };
+
+      const { error } = await supabase.from('businesses').update(businessForDb).eq('id', id);
       if (error) throw error;
 
       await fetchData();
@@ -196,21 +218,43 @@ const App: React.FC = () => {
       setActiveView('adminClients');
       alert('Negocio actualizado con éxito!');
     } catch (error) {
-      console.error(error);
+      console.error("Error updating business:", error);
       alert('Error al actualizar el negocio.');
     }
   };
 
   const handleAddBusiness = async (newBusiness: Omit<Business, 'id' | 'reviews' | 'averageRating'>) => {
      try {
-      const { error } = await supabase.from('businesses').insert([newBusiness]);
+      // Exclude client-side derived 'isActive' property and map to snake_case for DB
+      const { isActive, ...restOfBusiness } = newBusiness;
+      const businessForDb = {
+        name: restOfBusiness.name,
+        description: restOfBusiness.description,
+        logo_url: restOfBusiness.logoUrl,
+        phone: restOfBusiness.phone,
+        whatsapp: restOfBusiness.whatsapp,
+        website: restOfBusiness.website,
+        category_id: restOfBusiness.categoryId,
+        services: restOfBusiness.services,
+        products: restOfBusiness.products,
+        is_featured: restOfBusiness.isFeatured,
+        owner_name: restOfBusiness.ownerName,
+        owner_email: restOfBusiness.ownerEmail,
+        promotion_end_date: restOfBusiness.promotionEndDate,
+        address: restOfBusiness.address,
+        latitude: restOfBusiness.latitude,
+        longitude: restOfBusiness.longitude,
+        google_maps_url: restOfBusiness.googleMapsUrl
+      };
+
+      const { error } = await supabase.from('businesses').insert([businessForDb]);
       if (error) throw error;
       
       await fetchData();
       alert('Negocio añadido con éxito!');
       setActiveView('adminDashboard');
     } catch (error) {
-      console.error(error);
+      console.error("Error adding business:", error);
       alert('Error al añadir el negocio.');
     }
   };
